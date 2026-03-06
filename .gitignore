@@ -43,3 +43,14 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# HypeGrid Secrets & Environment
+.env
+.env.local
+*.env
+ios/Runner/GoogleService-Info.plist
+android/app/google-services.json
+
+# Generated Code
+*.g.dart
+
