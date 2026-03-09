@@ -2,10 +2,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hype_grid/model/hype_event.dart';
 import 'package:hype_grid/pages/home/widget/mind_refresh_pills.dart';
 import 'package:hype_grid/pages/home/widget/sport_filter_chips.dart';
+import 'package:hype_grid/services/hype_repository.dart';
 import 'home_event_state.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
-  HomeBloc() : super(HomeInitial()) {
+  final HypeRepository _repository;
+
+  HomeBloc({HypeRepository? repository})
+    : _repository = repository ?? HypeRepository(),
+      super(HomeInitial()) {
     on<LoadHomeEvents>(_onLoadEvents);
     on<FilterByDuration>(_onFilterDuration);
     on<FilterBySport>(_onFilterSport);
@@ -20,49 +25,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     );
 
     try {
-      // Simulate network fetch with dummy data matching the UI mockup
-      await Future.delayed(const Duration(seconds: 1));
-
-      final dummyEvents = [
-        HypeEvent(
-          eventId: '1',
-          title: 'Liverpool vs Arsenal',
-          sport: 'Football',
-          startTime: DateTime.now().add(const Duration(hours: 2)),
-          durationMinutes: 110,
-          hypeScore: 92,
-          broadcastChannel: 'Vidio',
-          metadata: {
-            'league': 'Premier League',
-            'home': 'Liverpool',
-            'away': 'Arsenal',
-          },
-        ),
-        HypeEvent(
-          eventId: '2',
-          title: 'Australian GP - Race',
-          sport: 'F1',
-          startTime: DateTime.now().add(const Duration(hours: 5)),
-          durationMinutes: 120,
-          hypeScore: 75,
-          broadcastChannel: 'Trans7',
-          metadata: {'league': 'Formula 1', 'session': 'Race'},
-        ),
-        HypeEvent(
-          eventId: '3',
-          title: 'Qatar GP - Qualifying',
-          sport: 'MotoGP',
-          startTime: DateTime.now().add(const Duration(days: 1, hours: 2)),
-          durationMinutes: 60,
-          hypeScore: 55,
-          broadcastChannel: 'Trans7',
-          metadata: {'league': 'MotoGP', 'session': 'Qualifying'},
-        ),
-      ];
+      final events = await _repository.fetchEvents();
 
       _emitLoadedWithFilters(
         emit,
-        dummyEvents,
+        events,
         state.selectedDuration,
         state.selectedSport,
       );

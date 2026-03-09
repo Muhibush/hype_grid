@@ -8,9 +8,9 @@ trigger: always_on
 
 - **Project Name:** HypeGrid
 - **Repository:** hype_grid
-- **Purpose:** A premium social showcase application designed to "Elevate Your Presence" through a high-impact, grid-based aesthetic.
-- **Core Functionality:** Grid-based visualization, themed UI components, and state-driven interactions.
-- **Architecture:** Flutter application using BLoC for state management and a clean directory structure separating UI (pages/widgets) from logic (bloc/services).
+- **Purpose:** A "Mind Refresh" app that shows a curated, high-hype list of Football, F1, and MotoGP events for the next 7 days, localized for broadcasting in Indonesia (WIB).
+- **Core Functionality:** Grid-based visualization of sports events, hype-score calculation, and local broadcast localization.
+- **Architecture:** Flutter application using BLoC for state management, powered by a Python backend for data synchronization and Supabase for persistence.
 
 ---
 
@@ -19,10 +19,10 @@ trigger: always_on
 | Layer              | Technology                                              |
 |--------------------|--------------------------------------------------------|
 | **Framework**      | Flutter                                                |
-| **Language**       | Dart                                                  |
+| **Language**       | Dart, Python (Sync Script)                             |
 | **State Management**| flutter_bloc                                           |
-| **Database**       | [Pending - TBD]                                        |
-| **Auth**           | [Pending - TBD]                                        |
+| **Database**       | Supabase (PostgreSQL)                                  |
+| **Automation**     | GitHub Actions                                         |
 | **Styling**        | Custom `AppTheme` with Google Fonts (Outfit & Inter)   |
 | **Icons**          | Material Icons, Cupertino Icons                        |
 

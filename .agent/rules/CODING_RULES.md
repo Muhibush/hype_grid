@@ -9,6 +9,7 @@ trigger: always_on
 - **Business Logic:** Must reside in **BLoCs** or **Services**. Widgets should never contain complex logic or calculations.
 - **Component Responsibility:** Widgets should focus on rendering and event delegation (e.g., adding events to BLoCs).
 - **Dart & Clean Code:** Use strong typing. Avoid `dynamic`. Follow the official [Dart Style Guide](https://dart.dev/guides/language/effective-dart/style).
+- **Python (Sync Script):** Use `requests` or `httpx` for API calls. Ensure robust error handling for external APIs. Follow [PEP 8](https://peps.python.org/pep-0008/).
 
 ---
 

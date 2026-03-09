@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hype_grid/utils/app_theme.dart';
 import 'package:hype_grid/pages/splash/splash_screen.dart';
+import 'package:hype_grid/services/supabase_service.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
+
+  // Initialize Supabase
+  await SupabaseService().initialize();
+
   runApp(const HypeGridApp());
 }
 

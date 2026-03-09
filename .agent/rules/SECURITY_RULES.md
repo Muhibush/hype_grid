@@ -15,6 +15,7 @@ These are mandatory security practices for anyone working on the HypeGrid reposi
 - **Project-specific sensitive files:**
     - `ios/Runner/GoogleService-Info.plist` (If Firebase is added)
     - `android/app/google-services.json` (If Firebase is added)
+    - `.env` (Containing `SUPABASE_KEY`, `API_FOOTBALL_KEY`, etc.)
 
 ---
 
