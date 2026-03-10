@@ -1,0 +1,26 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Sync Hype Events",
+            "type": "python",
+            "request": "launch",
+            "program": "scripts/sync_hype.py",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "python": "python3",
+            "justMyCode": true
+        },
+        {
+            "name": "HypeGrid (Debug)",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "HypeGrid (Release)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}

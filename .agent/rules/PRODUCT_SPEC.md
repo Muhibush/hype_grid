@@ -5,7 +5,7 @@ trigger: always_on
 # 🚀 PRODUCT SPECIFICATION: HypeGrid (MVP)
 
 ## **Objective**
-A "Mind Refresh" app that shows a curated, high-hype list of Football, F1, and MotoGP events for the next 7 days, localized for broadcasting in Indonesia (WIB).
+A "Mind Refresh" app that shows a curated, high-hype list of Football, F1, Basketball, NBA, and MMA events for the next 7 days, localized for broadcasting in Indonesia (WIB).
 
 ---
 
@@ -15,9 +15,7 @@ A "Mind Refresh" app that shows a curated, high-hype list of Football, F1, and M
 * **Backend/Automation:** **GitHub Actions** (Python) – Runs the "Global Sync" once daily.
 * **Frontend:** **Flutter** – For the cross-platform list UI.
 * **APIs:**
-    * **Football:** API-Football (RapidAPI).
-    * **F1:** OpenF1 (Free/No Key).
-    * **MotoGP:** TheSportsDB (API Key: 123).
+    * **Exclusive Provider:** ESPN (Hidden Scoreboard API) for all sports.
 
 ---
 
@@ -26,9 +24,9 @@ A "Mind Refresh" app that shows a curated, high-hype list of Football, F1, and M
 Table: `hype_grid_events`
 * `event_id` (Text, Primary Key, Unique) – Format: `sport_apiID` (e.g., `f1_2026_01`).
 * `title` (Text) – e.g., "Liverpool vs Arsenal" or "Australian GP - Qualifying."
-* `sport` (Text) – "Football", "F1", or "MotoGP".
+* `sport` (Text) – "Football", "F1", "MotoGP", "NBA", or "Volleyball".
 * `start_time` (Timestamp with Timezone).
-* `duration_minutes` (Integer) – Standardize: Football (110), F1 Race (120), F1 Qualy (60).
+* `duration_minutes` (Integer) – Standardize: Football (110), F1 Race (120), NBA (150), Volleyball (90).
 * `hype_score` (Integer) – 0 to 100.
 * `broadcast_channel` (Text) – e.g., "Vidio", "beIN Sports", "Trans7".
 * `metadata` (JSONB) – For team logos, league names, or driver standings.
@@ -55,6 +53,8 @@ Table: `hype_grid_events`
 ### **Importance:**
 * F1/MotoGP: Race = 90; Qualifying = 60; Practice = 30.
 * Football: Champions League = 90; Premier League = 80; Friendly = 20.
+* NBA: Playoffs = 90; Regular Season = 70.
+* Volleyball: Nations League = 80; Domestic League = 60.
 
 ### **Competitiveness:**
 * Both Team A & B in Top 5 = +20.

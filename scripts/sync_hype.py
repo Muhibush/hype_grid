@@ -10,8 +10,6 @@ load_dotenv()
 # Configuration
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-FOOTBALL_API_KEY = os.getenv("FOOTBALL_API_KEY")
-THE_SPORTS_DB_KEY = "123"  # Free tier key from spec
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     print("❌ Error: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing.")
@@ -19,150 +17,125 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Broadcaster Mapping
+# Broadcaster Mapping (WIB / Local Indonesia)
 BROADCAST_MAP = {
-    "Premier League": "Vidio",
-    "Champions League": "Vidio",
-    "La Liga": "beIN Sports",
-    "Serie A": "beIN Sports",
+    "Football": "Vidio / beIN Sports",
+    "NBA": "Vidio",
+    "Basketball": "Vidio",
     "F1": "beIN Sports",
-    "MotoGP": "Trans7"
+    "MMA": "Mola TV / Vidio",
+    "UFC": "Mola TV / Vidio"
 }
 
-def calculate_hype_score(sport, importance_base, team_a_rank=None, team_b_rank=None, is_derby=False, is_opener=False):
+def calculate_hype_score(sport, is_featured=True):
     """
-    Hype = (Importance x 0.5) + (Competitiveness x 0.3) + (Context x 0.2)
+    Simultated Hype logic for ESPN events. 
     """
-    importance = importance_base * 0.5
-    
-    competitiveness = 0
-    if team_a_rank is not None and team_b_rank is not None:
-        if team_a_rank <= 5 and team_b_rank <= 5:
-            competitiveness = 20
-    competitiveness *= 0.3
-    
-    context = 0
-    if is_derby:
-        context += 10
-    if is_opener:
-        context += 15
-    context *= 0.2
-    
-    return int(importance + competitiveness + context)
+    base_scores = {
+        "Football": 80,
+        "NBA": 85,
+        "Basketball": 70,
+        "F1": 90,
+        "MMA": 85
+    }
+    score = base_scores.get(sport, 60)
+    if is_featured:
+        score += 10
+    return min(100, score)
 
-def fetch_football_events():
-    print("⚽ Fetching Football events...")
-    if not FOOTBALL_API_KEY:
-        print("⚠️ FOOTBALL_API_KEY not found. Skipping Football.")
-        return []
-    
-    # Range: Yesterday to Today + 6 Days
-    date_start = (datetime.now(timezone.utc) - timedelta(days=1)).strftime('%Y-%m-%d')
-    date_end = (datetime.now(timezone.utc) + timedelta(days=6)).strftime('%Y-%m-%d')
-    
-    # Leagues of interest (e.g., PL, CL, etc.)
-    # 39 = Premier League, 2 = Champions League
-    leagues = [39, 2]
-    events = []
-    
-    for league_id in leagues:
-        url = f"https://v3.football.api-sports.io/fixtures?league={league_id}&from={date_start}&to={date_end}"
-        headers = {
-            "x-apisports-key": FOOTBALL_API_KEY
-        }
-        
-        try:
-            response = requests.get(url, headers=headers)
-            data = response.json()
-            
-            for fixture in data.get("response", []):
-                league_name = fixture["league"]["name"]
-                importance_base = 90 if league_id == 2 else 80
-                
-                # Simplified rank check for demo (would normally fetch standings)
-                hype = calculate_hype_score("Football", importance_base)
-                
-                event = {
-                    "event_id": f"fb_{fixture['fixture']['id']}",
-                    "title": f"{fixture['teams']['home']['name']} vs {fixture['teams']['away']['name']}",
-                    "sport": "Football",
-                    "start_time": fixture["fixture"]["date"],
-                    "duration_minutes": 110,
-                    "hype_score": hype,
-                    "broadcast_channel": BROADCAST_MAP.get(league_name, "Local TV"),
-                    "metadata": {
-                        "league": league_name,
-                        "home_logo": fixture["teams"]["home"]["logo"],
-                        "away_logo": fixture["teams"]["away"]["logo"]
-                    }
-                }
-                events.append(event)
-        except Exception as e:
-            print(f"❌ Error fetching Football league {league_id}: {e}")
-            
-    return events
-
-def fetch_f1_events():
-    print("🏎️ Fetching F1 events...")
-    # OpenF1 for schedule
-    url = "https://api.openf1.org/v1/sessions"
-    # Note: OpenF1 provides historical data mostly, but for MVP we might need a specific season
-    # Let's assume we fetch for current year
-    year = datetime.now().year
+def fetch_espn_events(sport_slug, league_slug, display_name):
+    """
+    Primary fetcher using ESPN's hidden API scoreboard.
+    """
+    print(f"📡 Fetching {display_name} from ESPN Radar...")
+    url = f"https://site.api.espn.com/apis/site/v2/sports/{sport_slug}/{league_slug}/scoreboard"
     
     try:
-        # In a real scenario, we'd filter for upcoming
-        # Mocking for now as OpenF1 sesssions API can be heavy/limited for future
-        return []
-    except Exception as e:
-        print(f"❌ Error fetching F1: {e}")
-        return []
-
-def fetch_motogp_events():
-    print("🏍️ Fetching MotoGP events...")
-    url = f"https://www.thesportsdb.com/api/v1/json/{THE_SPORTS_DB_KEY}/eventsnextleague.php?id=4521"
-    
-    try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=15)
         data = response.json()
         events = []
         
-        for e in data.get("events", []):
-            hype = calculate_hype_score("MotoGP", 90) # Assume race
-            
-            event = {
-                "event_id": f"moto_{e['idEvent']}",
-                "title": e["strEvent"],
-                "sport": "MotoGP",
-                "start_time": f"{e['dateEvent']}T{e['strTime']}",
-                "duration_minutes": 120,
-                "hype_score": hype,
-                "broadcast_channel": "Trans7",
-                "metadata": {
-                    "league": "MotoGP",
-                    "thumb": e.get("strThumb")
-                }
-            }
-            events.append(event)
+        for event in data.get("events", []):
+            try:
+                # Basic Info
+                event_id = f"espn_{event['id']}"
+                title = event.get("name")
+                start_time = event.get("date")
+                
+                # Metadata extraction
+                competitions = event.get("competitions", [{}])[0]
+                competitors = competitions.get("competitors", [])
+                home_team = next((c for c in competitors if c.get("homeAway") == "home"), {})
+                away_team = next((c for c in competitors if c.get("homeAway") == "away"), {})
+                
+                # Standardize Sport Name
+                sport_name = display_name
+                
+                # Duration logic (Standardized)
+                duration = 110 # Default
+                if sport_name == "NBA": duration = 150
+                elif sport_name == "F1": duration = 120
+                
+                events.append({
+                    "event_id": event_id,
+                    "title": title,
+                    "sport": sport_name,
+                    "start_time": start_time,
+                    "duration_minutes": duration,
+                    "hype_score": calculate_hype_score(sport_name),
+                    "broadcast_channel": BROADCAST_MAP.get(sport_name, "Local TV"),
+                    "metadata": {
+                        "league": event.get("season", {}).get("slug", league_slug).upper(),
+                        "home_logo": home_team.get("team", {}).get("logo"),
+                        "away_logo": away_team.get("team", {}).get("logo"),
+                        "short_name": event.get("shortName"),
+                        "source": "ESPN"
+                    }
+                })
+            except Exception as e:
+                print(f"   ⚠️ Skipping event in {display_name}: {e}")
+                continue
+                
+        print(f"   ✅ Found {len(events)} {display_name} events.")
         return events
+        
     except Exception as e:
-        print(f"❌ Error fetching MotoGP: {e}")
+        print(f"❌ Error fetching {display_name} from ESPN: {e}")
         return []
 
 def sync_all():
+    print("🚀 Starting Exclusive ESPN Global Sync...")
     all_events = []
-    all_events.extend(fetch_football_events())
-    all_events.extend(fetch_f1_events())
-    all_events.extend(fetch_motogp_events())
+    stats = {}
     
-    print(f"📊 Found {len(all_events)} total events.")
+    # Define ESPN Targets (Removed MotoGP and Volleyball)
+    targets = [
+        ("soccer", "all", "Football"),
+        ("basketball", "nba", "NBA"),
+        ("basketball", "mens-college-basketball", "Basketball"),
+        ("racing", "f1", "F1"),
+        ("mma", "ufc", "MMA"),
+    ]
+    
+    for sport_slug, league_slug, display_name in targets:
+        events = fetch_espn_events(sport_slug, league_slug, display_name)
+        all_events.extend(events)
+        stats[display_name] = stats.get(display_name, 0) + len(events)
+    
+    print(f"\n📊 Total Unique Events Collected: {len(all_events)}")
     
     # Upsert to Supabase
+    success_count = 0
+    fail_count = 0
+    print("📤 Upserting to Supabase...")
     for event in all_events:
         try:
             supabase.table("hype_grid_events").upsert(event).execute()
+            success_count += 1
         except Exception as e:
-            print(f"❌ Failed to upsert event {event['event_id']}: {e}")
+            if fail_count < 5:
+                print(f"   ❌ Failed to upsert event {event['event_id']}: {e}")
+            fail_count += 1
             
     # Prune old events
     try:
@@ -171,6 +144,17 @@ def sync_all():
         print("🧹 Old events pruned.")
     except Exception as e:
         print(f"❌ Pruning failed: {e}")
+
+    # Final Summary Report
+    print("\n" + "="*40)
+    print("🏁 ESPN EXCLUSIVE SYNC COMPLETE")
+    print("="*40)
+    for sport, count in stats.items():
+        print(f"{sport.ljust(15)}: {count} events")
+    print("-" * 40)
+    print(f"Total Upserted  : {success_count}")
+    print(f"Total Failed    : {fail_count}")
+    print("="*40 + "\n")
 
 if __name__ == "__main__":
     sync_all()
