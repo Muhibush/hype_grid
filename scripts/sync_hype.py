@@ -38,6 +38,21 @@ BROADCAST_MAP = {
     "MLBB": "YouTube / TikTok / Vidio"
 }
 
+# Soccer Leagues relevant for Indonesia
+SOCCER_LEAGUES_IDN = [
+    ("eng.1", "Premier League"),
+    ("esp.1", "La Liga"),
+    ("ita.1", "Serie A"),
+    ("ger.1", "Bundesliga"),
+    ("fra.1", "Ligue 1"),
+    ("uefa.champions", "Champions League"),
+    ("uefa.europa", "Europa League"),
+    ("idn.1", "Indonesian Liga 1"),
+    ("afc.champions", "AFC Champions League"),
+    ("fifa.world", "World Cup"),
+    ("usa.1", "MLS"),
+]
+
 # --- HYPE ENGINE ---
 
 def calculate_hype_score(sport, is_featured=True, tier=None):
@@ -323,7 +338,13 @@ def engine_ics(url, display_name):
 
 # --- SPORT GETTERS (The Modular "Sport-First" Wrappers) ---
 
-def sync_football(): return engine_espn("soccer", "all", "Football")
+def sync_football():
+    all_football = []
+    for slug, name in SOCCER_LEAGUES_IDN:
+        print(f"   ⚽ Fetching {name}...")
+        events = engine_espn("soccer", slug, "Football")
+        all_football.extend(events)
+    return all_football
 def sync_nba(): return engine_espn("basketball", "nba", "NBA")
 def sync_mma(): return engine_espn("mma", "ufc", "MMA")
 def sync_f1(): return engine_espn("racing", "f1", "F1")
@@ -406,11 +427,11 @@ def sync_all():
             print(f"   ❌ Upsert Error ({event_id}): {e}")
             fail_count += 1
             
-    # 🧹 Prune old (older than 7 days)
+    # 🧹 Prune old (older than 24 hours)
     try:
-        cutoff = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+        cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
         supabase.table("hype_grid_events").delete().lt("start_time", cutoff).execute()
-        print("🧹 Cleanup: Old events pruned.")
+        print(f"🧹 Cleanup: Events older than {cutoff} pruned.")
     except Exception: pass
 
     # Summary
