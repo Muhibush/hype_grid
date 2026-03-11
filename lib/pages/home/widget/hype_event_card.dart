@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hype_grid/model/hype_event.dart';
-import 'package:hype_grid/pages/home/widget/event_detail_sheet.dart';
+import 'package:hype_grid/pages/detail/event_detail_screen.dart';
 import 'package:hype_grid/pages/home/widget/hype_badge.dart';
 import 'package:hype_grid/pages/home/widget/sport_tag.dart';
 import 'package:hype_grid/utils/app_colors.dart';
@@ -19,7 +19,12 @@ class HypeEventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        EventDetailSheet.show(context, event);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EventDetailScreen(event: event),
+          ),
+        );
         onTap();
       },
       child: Container(

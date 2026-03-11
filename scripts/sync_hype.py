@@ -13,11 +13,11 @@ load_dotenv()
 
 # Configuration
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 PANDASCORE_API_KEY = os.getenv("PANDASCORE_API_KEY")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
-    print("❌ Error: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing.")
+    print("❌ Error: SUPABASE_URL or SUPABASE_SECRET_KEY/SERVICE_ROLE_KEY missing.")
     exit(1)
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -87,7 +87,7 @@ def engine_espn(sport_slug, league_slug, display_name):
                 
                 events.append({
                     "event_id": f"espn_{event['id']}",
-                    "title": event.get("name"),
+                    "title": event.get("name", "").replace(" at ", " vs "),
                     "sport": display_name,
                     "start_time": event.get("date"),
                     "duration_minutes": 150 if display_name == "NBA" else 110,

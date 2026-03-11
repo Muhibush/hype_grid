@@ -8,9 +8,13 @@ class SupabaseService {
   SupabaseService._internal();
 
   Future<void> initialize() async {
+    final publishableKey = dotenv.env['SUPABASE_PUBLISHABLE_KEY'] ?? 
+                          dotenv.env['SUPABASE_ANON_KEY'] ?? 
+                          dotenv.env['SUPABASE_SERVICE_ROLE_KEY'] ?? 
+                          '';
     await Supabase.initialize(
       url: dotenv.env['SUPABASE_URL'] ?? '',
-      anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+      anonKey: publishableKey,
     );
   }
 
