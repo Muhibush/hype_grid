@@ -28,17 +28,8 @@ class HypeAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ],
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(
-            Icons.settings_outlined,
-            color: AppColors.textSecondary,
-          ),
-          onPressed: () {
-            // Future feature: settings
-          },
-        ),
-        const SizedBox(width: 8),
+      actions: const [
+        SizedBox(width: 8),
       ],
     );
   }

@@ -3,15 +3,23 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hype_grid/utils/app_colors.dart';
 
 enum SportFilter {
-  all('All', 'All'),
-  football('Football', '⚽'),
-  f1('F1', '🏎️'),
-  motogp('MotoGP', '🏍️');
+  all('All', 'All', 'All'),
+  football('Football', '⚽', 'Football'),
+  f1('F1', '🏎️', 'F1'),
+  motogp('MotoGP', '🏍️', 'MotoGP'),
+  nba('NBA', '🏀', 'NBA'),
+  mma('MMA', '🥊', 'MMA'),
+  mlbb('MLBB', '🎮', 'MLBB'),
+  lol('LoL', '🎮', 'LoL'),
+  csgo('CSGO', '🔫', 'CSGO'),
+  dota2('Dota 2', '🛡️', 'Dota 2'),
+  valorant('Valorant', '🎯', 'Valorant');
 
   final String label;
   final String icon;
+  final String searchKey;
 
-  const SportFilter(this.label, this.icon);
+  const SportFilter(this.label, this.icon, this.searchKey);
 }
 
 class SportFilterChips extends StatelessWidget {
@@ -28,11 +36,14 @@ class SportFilterChips extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: SportFilter.values.map((filter) {
           final isSelected = selectedFilter == filter;
+          final isLast = filter == SportFilter.values.last;
+
           return Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: EdgeInsets.only(right: isLast ? 0 : 12),
             child: GestureDetector(
               onTap: () => onSelected(filter),
               child: AnimatedContainer(
@@ -42,7 +53,7 @@ class SportFilterChips extends StatelessWidget {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : AppColors.background,
+                  color: isSelected ? AppColors.primary : AppColors.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isSelected ? AppColors.primary : AppColors.divider,
@@ -58,12 +69,10 @@ class SportFilterChips extends StatelessWidget {
                     Text(
                       filter.label,
                       style: GoogleFonts.inter(
-                        color: isSelected
-                            ? Colors.white
-                            : AppColors.textPrimary,
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.w500,
+                        color:
+                            isSelected ? Colors.white : AppColors.textPrimary,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.w500,
                         fontSize: 14,
                       ),
                     ),

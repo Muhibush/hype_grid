@@ -29,49 +29,68 @@ class _HomeScreenContent extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: const HypeAppBar(),
-      body: BlocBuilder<HomeBloc, HomeState>(
-        builder: (context, state) {
-          return CustomScrollView(
-            slivers: [
-              // Filters Section (Sticky ish visually)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 0, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SportFilterChips(
-                        selectedFilter: state.selectedSport,
-                        onSelected: (sport) {
-                          context.read<HomeBloc>().add(FilterBySport(sport));
-                        },
-                      ),
-                    ],
+      body: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+        child: BlocBuilder<HomeBloc, HomeState>(
+          builder: (context, state) {
+            final List<Widget> slivers = [];
+
+            // 1. Sticky Filters (using SliverAppBar for stability)
+            slivers.add(
+              SliverAppBar(
+                pinned: true,
+                floating: false,
+                backgroundColor: AppColors.background,
+                elevation: 0,
+                // Removed scrolledUnderElevation: 0 to allow the color to change when scrolling
+                toolbarHeight: 0,
+                collapsedHeight: 80,
+                expandedHeight: 80,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    alignment: Alignment.center,
+                    child: SportFilterChips(
+                      selectedFilter: state.selectedSport,
+                      onSelected: (sport) {
+                        context.read<HomeBloc>().add(FilterBySport(sport));
+                      },
+                    ),
                   ),
                 ),
               ),
+            );
 
-              // Content Area
-              if (state is HomeLoading)
+            // 2. Content
+            if (state is HomeLoading || state is HomeInitial) {
+              slivers.add(
                 const SliverFillRemaining(
+                  hasScrollBody: false,
                   child: Center(
                     child: CircularProgressIndicator(color: AppColors.primary),
                   ),
-                )
-              else if (state is HomeError)
+                ),
+              );
+            } else if (state is HomeError) {
+              slivers.add(
                 SliverFillRemaining(
+                  hasScrollBody: false,
                   child: Center(
                     child: Text(
                       'Error: ${state.message}',
                       style: const TextStyle(color: Colors.red),
                     ),
                   ),
-                )
-              else if (state is HomeLoaded)
-                _buildEventList(state.filteredEvents),
-            ],
-          );
-        },
+                ),
+              );
+            } else if (state is HomeLoaded) {
+              slivers.add(_buildEventList(state.filteredEvents));
+            } else {
+              slivers.add(const SliverToBoxAdapter(child: SizedBox.shrink()));
+            }
+
+            return CustomScrollView(slivers: slivers);
+          },
+        ),
       ),
     );
   }
@@ -79,6 +98,7 @@ class _HomeScreenContent extends StatelessWidget {
   Widget _buildEventList(List<HypeEvent> events) {
     if (events.isEmpty) {
       return const SliverFillRemaining(
+        hasScrollBody: false,
         child: Center(
           child: Text(
             'No events found for the selected filters.',
@@ -88,7 +108,7 @@ class _HomeScreenContent extends StatelessWidget {
       );
     }
 
-    // Grouping logic
+    // Grouping events by date
     final groupedEvents = <DateTime, List<HypeEvent>>{};
     for (var event in events) {
       final date = DateTime(
@@ -96,10 +116,7 @@ class _HomeScreenContent extends StatelessWidget {
         event.startTime.month,
         event.startTime.day,
       );
-      if (!groupedEvents.containsKey(date)) {
-        groupedEvents[date] = [];
-      }
-      groupedEvents[date]!.add(event);
+      groupedEvents.putIfAbsent(date, () => []).add(event);
     }
 
     final sortedDates = groupedEvents.keys.toList()..sort();
@@ -109,35 +126,28 @@ class _HomeScreenContent extends StatelessWidget {
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
-            // Calculate which group and item this index maps to
             int currentCount = 0;
             for (var date in sortedDates) {
               final eventsForDate = groupedEvents[date]!;
 
-              // Is this index the header?
+              // Header
               if (index == currentCount) {
                 return DateSectionHeader(date: date);
               }
-
               currentCount++;
 
-              // Is this index an event in this group?
+              // Events in this date
               if (index < currentCount + eventsForDate.length) {
                 final eventIndex = index - currentCount;
-                final event = eventsForDate[eventIndex];
                 return HypeEventCard(
-                  event: event,
-                  onTap: () {
-                    // TODO: Open Bottom Sheet
-                  },
+                  event: eventsForDate[eventIndex],
+                  onTap: () {}, // TODO
                 );
               }
-
               currentCount += eventsForDate.length;
             }
             return null;
           },
-          // Total items = number of headers + number of all events
           childCount: sortedDates.length + events.length,
         ),
       ),

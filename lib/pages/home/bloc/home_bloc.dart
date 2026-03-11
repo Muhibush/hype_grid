@@ -38,11 +38,16 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     List<HypeEvent> allEvents,
     SportFilter sport,
   ) {
+    final now = DateTime.now();
     var filtered = allEvents.where((event) {
+      // Incoming events only
+      final isUpcoming = event.startTime.isAfter(now);
+      if (!isUpcoming) return false;
+
       // Sport Filter
       bool sportMatches = true;
       if (sport != SportFilter.all) {
-        sportMatches = event.sport.toLowerCase() == sport.name.toLowerCase();
+        sportMatches = event.sport.toLowerCase() == sport.searchKey.toLowerCase();
       }
 
       return sportMatches;
