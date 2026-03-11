@@ -24,14 +24,14 @@ class DateSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 24, bottom: 12),
+      padding: const EdgeInsets.only(top: 32, bottom: 16),
       child: Text(
         '${_getRelativeDayString()}, ${DateFormat('d MMM').format(date).toUpperCase()}',
         style: GoogleFonts.inter(
-          color: AppColors.primary,
+          color: AppColors.textSecondary,
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          letterSpacing: 1.5,
+          letterSpacing: 2.0,
         ),
       ),
     );

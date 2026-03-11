@@ -8,28 +8,37 @@ class HypeAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      title: Row(
-        children: [
-          const Text('🔥', style: TextStyle(fontSize: 24)),
-          const SizedBox(width: 8),
-          Text(
-            'Hype',
-            style: GoogleFonts.outfit(
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
+      centerTitle: true,
+      title: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🔥', style: TextStyle(fontSize: 22)),
+            const SizedBox(width: 10),
+            Text(
+              'HYPE',
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w900,
+                color: AppColors.primary,
+                letterSpacing: -0.5,
+                fontSize: 24,
+              ),
             ),
-          ),
-          Text(
-            'Grid',
-            style: GoogleFonts.outfit(
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+            Text(
+              'GRID',
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w900,
+                color: AppColors.textPrimary,
+                letterSpacing: -0.5,
+                fontSize: 24,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       actions: const [
-        SizedBox(width: 8),
+        SizedBox(width: 48), // Balancing for the centerTitle if needed, or lead spacing
       ],
     );
   }

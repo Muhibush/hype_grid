@@ -7,7 +7,7 @@ class HypeBadge extends StatelessWidget {
 
   const HypeBadge({super.key, required this.hypeScore});
 
-  bool get isHighHype => hypeScore >= 80;
+  bool get isHighHype => hypeScore >= 95;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class HypeBadge extends StatelessWidget {
         boxShadow: isHighHype
             ? [
                 BoxShadow(
-                  color: AppColors.primary.withOpacity(0.4),
+                  color: AppColors.primary.withValues(alpha: 0.4),
                   blurRadius: 12,
                   spreadRadius: 2,
                 ),

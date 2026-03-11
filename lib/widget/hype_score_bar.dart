@@ -67,7 +67,7 @@ class HypeScoreBar extends StatelessWidget {
                       boxShadow: score >= 80
                           ? [
                               BoxShadow(
-                                color: AppColors.primary.withOpacity(0.5),
+                                color: AppColors.primary.withValues(alpha: 0.5),
                                 blurRadius: 10,
                                 spreadRadius: 1,
                               ),

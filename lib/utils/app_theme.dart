@@ -16,7 +16,6 @@ class AppTheme {
       colorScheme: const ColorScheme.dark(
         primary: AppColors.primary,
         surface: AppColors.surface,
-        background: AppColors.background,
       ),
       textTheme: baseTextTheme.copyWith(
         displayLarge: GoogleFonts.outfit(

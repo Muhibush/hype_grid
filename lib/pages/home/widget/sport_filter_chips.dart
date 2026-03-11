@@ -43,37 +43,38 @@ class SportFilterChips extends StatelessWidget {
           final isLast = filter == SportFilter.values.last;
 
           return Padding(
-            padding: EdgeInsets.only(right: isLast ? 0 : 12),
+            padding: EdgeInsets.only(right: isLast ? 0 : 8),
             child: GestureDetector(
               onTap: () => onSelected(filter),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+                  horizontal: 20,
+                  vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : AppColors.surface,
-                  borderRadius: BorderRadius.circular(16),
+                  color: isSelected ? AppColors.primary : AppColors.surfaceHighlight,
+                  borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isSelected ? AppColors.primary : AppColors.divider,
+                    color: isSelected ? AppColors.primary : AppColors.divider.withValues(alpha: 0.5),
+                    width: 1,
                   ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     if (filter != SportFilter.all) ...[
-                      Text(filter.icon, style: const TextStyle(fontSize: 14)),
+                      Text(filter.icon, style: const TextStyle(fontSize: 13)),
                       const SizedBox(width: 8),
                     ],
                     Text(
                       filter.label,
                       style: GoogleFonts.inter(
                         color:
-                            isSelected ? Colors.white : AppColors.textPrimary,
+                            isSelected ? Colors.white : AppColors.textSecondary,
                         fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.w500,
-                        fontSize: 14,
+                            isSelected ? FontWeight.bold : FontWeight.w600,
+                        fontSize: 13,
                       ),
                     ),
                   ],

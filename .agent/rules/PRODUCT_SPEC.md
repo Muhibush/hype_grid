@@ -72,7 +72,7 @@ Table: `hype_grid_events`
 
 * **Mind Refresh Slider:** Filter by `duration_minutes` ("I have 1 hour" vs "I have 2+ hours").
 * **The Grid List:** Sorted by `start_time`.
-* **Visuals:** High `hype_score` (80+) get "🔥" icon and bold border.
+* **Visuals:** High `hype_score` (95+) get "🔥" icon and bold border.
 * **Broadcast Info:** Clear display of channel name.
 * **Timezone:** Auto-detect and display in local phone time.
 

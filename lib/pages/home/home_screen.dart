@@ -40,12 +40,11 @@ class _HomeScreenContent extends StatelessWidget {
               SliverAppBar(
                 pinned: true,
                 floating: false,
-                backgroundColor: AppColors.background,
+                backgroundColor: AppColors.background.withValues(alpha: 0.9),
                 elevation: 0,
-                // Removed scrolledUnderElevation: 0 to allow the color to change when scrolling
                 toolbarHeight: 0,
-                collapsedHeight: 80,
-                expandedHeight: 80,
+                collapsedHeight: 70,
+                expandedHeight: 70,
                 flexibleSpace: FlexibleSpaceBar(
                   background: Container(
                     alignment: Alignment.center,
@@ -122,7 +121,7 @@ class _HomeScreenContent extends StatelessWidget {
     final sortedDates = groupedEvents.keys.toList()..sort();
 
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {

@@ -89,7 +89,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -98,7 +98,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -108,14 +108,14 @@ class _SplashScreenState extends State<SplashScreen> {
             // Bottom Grid Icon
             Icon(
               Icons.grid_view_rounded,
-              color: AppColors.textSecondary.withOpacity(0.3),
+              color: AppColors.textSecondary.withValues(alpha: 0.3),
               size: 24,
             ),
             const SizedBox(height: 8),
             Container(
               width: 1,
               height: 20,
-              color: AppColors.primary.withOpacity(0.3),
+              color: AppColors.primary.withValues(alpha: 0.3),
             ),
             const SizedBox(height: 40),
           ],

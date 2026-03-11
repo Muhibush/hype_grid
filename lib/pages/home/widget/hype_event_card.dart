@@ -13,7 +13,7 @@ class HypeEventCard extends StatelessWidget {
 
   const HypeEventCard({super.key, required this.event, required this.onTap});
 
-  bool get isHighHype => event.hypeScore >= 80;
+  bool get isHighHype => event.hypeScore >= 95;
 
   @override
   Widget build(BuildContext context) {
@@ -28,23 +28,23 @@ class HypeEventCard extends StatelessWidget {
         onTap();
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 20),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: isHighHype ? AppColors.surfaceCardHype : AppColors.surfaceCard,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           border: isHighHype
               ? Border.all(
-                  color: AppColors.primary.withOpacity(0.5),
+                  color: AppColors.primary.withValues(alpha: 0.4),
                   width: 1.5,
                 )
-              : Border.all(color: AppColors.divider, width: 1),
+              : Border.all(color: AppColors.divider.withValues(alpha: 0.5), width: 1),
           boxShadow: isHighHype
               ? [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.15),
-                    blurRadius: 20,
-                    spreadRadius: 2,
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    blurRadius: 24,
+                    spreadRadius: 0,
                   ),
                 ]
               : null,
@@ -62,14 +62,15 @@ class HypeEventCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SportTag(sport: event.sport),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
                       Text(
-                        event.metadata?['league'] ?? event.sport.toUpperCase(),
+                        event.metadata?['league']?.toUpperCase() ??
+                            event.sport.toUpperCase(),
                         style: GoogleFonts.inter(
                           color: AppColors.textSecondary,
                           fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.2,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.5,
                         ),
                       ),
                     ],
@@ -78,96 +79,93 @@ class HypeEventCard extends StatelessWidget {
                 HypeBadge(hypeScore: event.hypeScore),
               ],
             ),
-            const SizedBox(height: 12),
-
+            const SizedBox(height: 16),
             // Title
             Text(
               event.title,
               style: GoogleFonts.outfit(
                 color: AppColors.textPrimary,
-                fontSize: 20,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
+                height: 1.2,
               ),
             ),
-
-            const SizedBox(height: 16),
-            const Divider(height: 1),
-            const SizedBox(height: 16),
-
-            // Bottom Row: Time and Broadcast
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        event.sport.toLowerCase() == 'football'
-                            ? 'Kick-off'
-                            : 'Start Time',
-                        style: GoogleFonts.inter(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${DateFormat('HH:mm').format(event.startTime)} WIB',
-                        style: GoogleFonts.outfit(
-                          color: AppColors.textPrimary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+            const SizedBox(height: 20),
+            // Bottom Info Row
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.background.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  _buildSubInfo(
+                    icon: Icons.access_time_filled_rounded,
+                    label: event.sport.toLowerCase() == 'football'
+                        ? 'KICKOFF'
+                        : 'START',
+                    value: '${DateFormat('HH:mm').format(event.startTime)} WIB',
                   ),
-                ),
-                Container(
-                  width: 1,
-                  height: 40,
-                  color: AppColors.divider,
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Watch on',
-                        style: GoogleFonts.inter(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        event.broadcastChannel,
-                        style: GoogleFonts.outfit(
-                          color: AppColors.primary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                  Container(
+                    width: 1,
+                    height: 24,
+                    color: AppColors.divider.withValues(alpha: 0.5),
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
                   ),
-                ),
-                // Reminder Icon placeholder
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.background,
-                    shape: BoxShape.circle,
+                  _buildSubInfo(
+                    icon: Icons.tv_rounded,
+                    label: 'BROADCAST',
+                    value: event.broadcastChannel,
+                    valueColor: AppColors.primary,
                   ),
-                  child: const Icon(
-                    Icons.notifications_none_rounded,
-                    color: AppColors.primary,
-                    size: 20,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSubInfo({
+    required IconData icon,
+    required String label,
+    required String value,
+    Color? valueColor,
+  }) {
+    return Expanded(
+      child: Row(
+        children: [
+          Icon(icon, color: AppColors.textSecondary.withValues(alpha: 0.5), size: 14),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    color: AppColors.textSecondary,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: GoogleFonts.outfit(
+                    color: valueColor ?? AppColors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
