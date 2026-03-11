@@ -89,6 +89,7 @@ def engine_espn(sport_slug, league_slug, display_name):
                     "event_id": f"espn_{event['id']}",
                     "title": event.get("name", "").replace(" at ", " vs "),
                     "sport": display_name,
+                    "data_source": "ESPN",
                     "start_time": event.get("date"),
                     "duration_minutes": 150 if display_name == "NBA" else 110,
                     "hype_score": calculate_hype_score(display_name),
@@ -96,8 +97,7 @@ def engine_espn(sport_slug, league_slug, display_name):
                     "metadata": {
                         "league": event.get("season", {}).get("slug", league_slug).upper(),
                         "home_logo": home_team.get("team", {}).get("logo"),
-                        "away_logo": away_team.get("team", {}).get("logo"),
-                        "source": "ESPN"
+                        "away_logo": away_team.get("team", {}).get("logo")
                     }
                 })
             except Exception: continue
@@ -133,6 +133,7 @@ def engine_pandascore(game_slug, display_name):
                     "event_id": f"ps_{match['id']}",
                     "title": name,
                     "sport": display_name,
+                    "data_source": "PandaScore",
                     "start_time": start_time,
                     "duration_minutes": 120,
                     "hype_score": calculate_hype_score(display_name),
@@ -140,8 +141,7 @@ def engine_pandascore(game_slug, display_name):
                     "metadata": {
                         "league": match.get("league", {}).get("name"),
                         "home_logo": home.get("image_url"),
-                        "away_logo": away.get("image_url"),
-                        "source": "PandaScore"
+                        "away_logo": away.get("image_url")
                     }
                 })
             except Exception: continue
@@ -261,13 +261,13 @@ def engine_liquipedia(wiki_name, display_name):
                             "event_id": event_id,
                             "title": title,
                             "sport": display_name,
+                            "data_source": "Liquipedia",
                             "start_time": start_time,
                             "duration_minutes": 90,
                             "hype_score": calculate_hype_score(display_name, is_featured=True),
                             "broadcast_channel": BROADCAST_MAP.get(display_name, "YouTube / TikTok / Vidio"),
                             "metadata": {
-                                "league": league_name,
-                                "source": "Liquipedia"
+                                "league": league_name
                             }
                         })
                     except Exception: continue
@@ -308,13 +308,12 @@ def engine_ics(url, display_name):
                         "event_id": event_id,
                         "title": title,
                         "sport": display_name,
+                        "data_source": "ICS Feed",
                         "start_time": start_time,
                         "duration_minutes": 120,
                         "hype_score": calculate_hype_score(display_name),
                         "broadcast_channel": BROADCAST_MAP.get(display_name, "Local TV"),
-                        "metadata": {
-                            "source": "ICS Feed"
-                        }
+                        "metadata": {}
                     })
                 except Exception: continue
         return events
@@ -373,15 +372,38 @@ def sync_all():
     print(f"\n📊 Aggregate Stats: {len(all_events)} Total Events Found.")
     
     # 📤 Upsert to Supabase
-    success_count = 0
+    print("\n📤 Processing Upserts...")
+    
+    # Track which IDs exist to distinguish between New and Updated
+    try:
+        existing_res = supabase.table("hype_grid_events").select("event_id").execute()
+        existing_ids = {row["event_id"] for row in existing_res.data}
+    except Exception as e:
+        print(f"   ⚠️ Could not fetch existing IDs: {e}")
+        existing_ids = set()
+
+    new_count = 0
+    updated_count = 0
     fail_count = 0
+    
     for event in all_events:
+        event_id = event.get("event_id")
         try:
-            # Basic validation: ensure start_time is future or recent
-            # (Supabase handles upsert by event_id)
+            # Data Readiness Check: ensure we have a valid title and start_time
+            if not event.get("title") or not event.get("start_time"):
+                print(f"   ⚠️ Skipping event {event_id} due to missing detail data.")
+                continue
+
+            # Supabase handles upsert by event_id. 
+            # community_hype is NOT in the payload, so it will be preserved by Supabase.
             supabase.table("hype_grid_events").upsert(event).execute()
-            success_count += 1
-        except Exception:
+            
+            if event_id in existing_ids:
+                updated_count += 1
+            else:
+                new_count += 1
+        except Exception as e:
+            print(f"   ❌ Upsert Error ({event_id}): {e}")
             fail_count += 1
             
     # 🧹 Prune old (older than 7 days)
@@ -398,7 +420,8 @@ def sync_all():
     for sport, val in stats.items():
         print(f"{sport.ljust(15)}: {val}")
     print("-" * 40)
-    print(f"Upserted Success: {success_count}")
+    print(f"New Events      : {new_count}")
+    print(f"Updated Events  : {updated_count}")
     print(f"Upserted Failed : {fail_count}")
     print("="*40 + "\n")
 

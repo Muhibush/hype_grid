@@ -7,6 +7,7 @@ class HypeEvent {
   final int hypeScore;
   final int communityHype;
   final String broadcastChannel;
+  final String? dataSource;
   final Map<String, dynamic>? metadata;
 
   const HypeEvent({
@@ -18,6 +19,7 @@ class HypeEvent {
     required this.hypeScore,
     this.communityHype = 0,
     required this.broadcastChannel,
+    this.dataSource,
     this.metadata,
   });
 
@@ -33,6 +35,7 @@ class HypeEvent {
       hypeScore: json['hype_score'] as int,
       communityHype: json['community_hype'] as int? ?? 0,
       broadcastChannel: json['broadcast_channel'] as String,
+      dataSource: json['data_source'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>?,
     );
   }
@@ -47,6 +50,7 @@ class HypeEvent {
       'hype_score': hypeScore,
       'community_hype': communityHype,
       'broadcast_channel': broadcastChannel,
+      'data_source': dataSource,
       'metadata': metadata,
     };
   }

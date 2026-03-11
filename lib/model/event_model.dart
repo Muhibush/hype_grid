@@ -8,6 +8,7 @@ class EventModel extends Equatable {
   final int durationMinutes;
   final int hypeScore;
   final String? broadcastChannel;
+  final String? dataSource;
   final Map<String, dynamic> metadata;
 
   const EventModel({
@@ -18,6 +19,7 @@ class EventModel extends Equatable {
     required this.durationMinutes,
     required this.hypeScore,
     this.broadcastChannel,
+    this.dataSource,
     required this.metadata,
   });
 
@@ -30,6 +32,7 @@ class EventModel extends Equatable {
       durationMinutes: json['duration_minutes'] as int,
       hypeScore: json['hype_score'] as int,
       broadcastChannel: json['broadcast_channel'] as String?,
+      dataSource: json['data_source'] as String?,
       metadata: json['metadata'] as Map<String, dynamic>? ?? {},
     );
   }
@@ -43,6 +46,7 @@ class EventModel extends Equatable {
       'duration_minutes': durationMinutes,
       'hype_score': hypeScore,
       'broadcast_channel': broadcastChannel,
+      'data_source': dataSource,
       'metadata': metadata,
     };
   }
@@ -56,6 +60,7 @@ class EventModel extends Equatable {
     durationMinutes,
     hypeScore,
     broadcastChannel,
+    dataSource,
     metadata,
   ];
 }
