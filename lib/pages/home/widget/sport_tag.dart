@@ -15,6 +15,16 @@ class SportTag extends StatelessWidget {
         return const Color(0xFFFF5722);
       case 'motogp':
         return const Color(0xFF2196F3);
+      case 'nba':
+      case 'basketball':
+        return const Color(0xFFFF9800);
+      case 'volleyball':
+        return const Color(0xFF9C27B0);
+      case 'mma':
+      case 'ufc':
+        return const Color(0xFFF44336);
+      case 'esports':
+        return const Color(0xFF00BCD4);
       default:
         return Colors.grey;
     }
@@ -28,6 +38,16 @@ class SportTag extends StatelessWidget {
         return '🏎️';
       case 'motogp':
         return '🏍️';
+      case 'nba':
+      case 'basketball':
+        return '🏀';
+      case 'volleyball':
+        return '🏐';
+      case 'mma':
+      case 'ufc':
+        return '🥊';
+      case 'esports':
+        return '🎮';
       default:
         return '🏅';
     }

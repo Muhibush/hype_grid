@@ -12,24 +12,58 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       super(HomeInitial()) {
     on<LoadHomeEvents>(_onLoadEvents);
     on<FilterBySport>(_onFilterSport);
+    on<ToggleHypeFilter>(_onToggleHypeFilter);
   }
 
   void _onLoadEvents(LoadHomeEvents event, Emitter<HomeState> emit) async {
-    emit(HomeLoading(selectedSport: state.selectedSport));
+    emit(
+      HomeLoading(
+        selectedSport: state.selectedSport,
+        showOnlyHype: state.showOnlyHype,
+      ),
+    );
 
     try {
       final events = await _repository.fetchEvents();
 
-      _emitLoadedWithFilters(emit, events, state.selectedSport);
+      _emitLoadedWithFilters(
+        emit,
+        events,
+        state.selectedSport,
+        state.showOnlyHype,
+      );
     } catch (e) {
-      emit(HomeError(e.toString(), selectedSport: state.selectedSport));
+      emit(
+        HomeError(
+          e.toString(),
+          selectedSport: state.selectedSport,
+          showOnlyHype: state.showOnlyHype,
+        ),
+      );
     }
   }
 
   void _onFilterSport(FilterBySport event, Emitter<HomeState> emit) {
     if (state is HomeLoaded) {
       final currentState = state as HomeLoaded;
-      _emitLoadedWithFilters(emit, currentState.allEvents, event.sport);
+      _emitLoadedWithFilters(
+        emit,
+        currentState.allEvents,
+        event.sport,
+        currentState.showOnlyHype,
+      );
+    }
+  }
+
+  void _onToggleHypeFilter(ToggleHypeFilter event, Emitter<HomeState> emit) {
+    if (state is HomeLoaded) {
+      final currentState = state as HomeLoaded;
+      _emitLoadedWithFilters(
+        emit,
+        currentState.allEvents,
+        currentState.selectedSport,
+        event.showOnlyHype,
+      );
     }
   }
 
@@ -37,6 +71,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     Emitter<HomeState> emit,
     List<HypeEvent> allEvents,
     SportFilter sport,
+    bool showOnlyHype,
   ) {
     final now = DateTime.now();
     var filtered = allEvents.where((event) {
@@ -44,10 +79,16 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       final isUpcoming = event.startTime.isAfter(now);
       if (!isUpcoming) return false;
 
+      // Hype Filter
+      if (showOnlyHype && event.hypeScore < 90) {
+        return false;
+      }
+
       // Sport Filter
       bool sportMatches = true;
       if (sport != SportFilter.all) {
-        sportMatches = event.sport.toLowerCase() == sport.searchKey.toLowerCase();
+        sportMatches =
+            event.sport.toLowerCase() == sport.searchKey.toLowerCase();
       }
 
       return sportMatches;
@@ -61,6 +102,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         allEvents: allEvents,
         filteredEvents: filtered,
         selectedSport: sport,
+        showOnlyHype: showOnlyHype,
       ),
     );
   }

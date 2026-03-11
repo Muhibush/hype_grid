@@ -7,7 +7,7 @@ class HypeBadge extends StatelessWidget {
 
   const HypeBadge({super.key, required this.hypeScore});
 
-  bool get isHighHype => hypeScore >= 95;
+  bool get isHighHype => hypeScore >= 90;
 
   @override
   Widget build(BuildContext context) {

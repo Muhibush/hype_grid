@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:hype_grid/model/hype_event.dart';
 import 'package:hype_grid/pages/detail/event_detail_screen.dart';
 import 'package:hype_grid/pages/home/widget/hype_badge.dart';
+import 'package:hype_grid/pages/home/widget/sport_tag.dart';
 import 'package:hype_grid/utils/app_colors.dart';
 import 'package:intl/intl.dart';
 
@@ -12,7 +13,7 @@ class HypeEventCard extends StatelessWidget {
 
   const HypeEventCard({super.key, required this.event, required this.onTap});
 
-  bool get isHighHype => event.hypeScore >= 95;
+  bool get isHighHype => event.hypeScore >= 90;
 
   @override
   Widget build(BuildContext context) {
@@ -84,16 +85,30 @@ class HypeEventCard extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              (event.metadata?['league'] ?? event.sport).toUpperCase(),
-                              style: GoogleFonts.inter(
-                                color: isHighHype
-                                    ? AppColors.primary.withValues(alpha: 0.8)
-                                    : AppColors.textSecondary,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1.5,
-                              ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SportTag(sport: event.sport, compact: false),
+                                if (event.metadata?['league'] != null) ...[
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    event.metadata!['league']
+                                        .toString()
+                                        .toUpperCase(),
+                                    style: GoogleFonts.inter(
+                                      color: isHighHype
+                                          ? AppColors.primary
+                                              .withValues(alpha: 0.8)
+                                          : AppColors.textSecondary,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 1,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ],
                             ),
                           ],
                         ),
@@ -139,31 +154,32 @@ class HypeEventCard extends StatelessWidget {
 
                   // Info Row (Time, Broadcast, Notify)
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      // Time Info
-                      _buildInfoColumn(
-                        label: event.sport.toLowerCase() == 'football'
-                            ? 'KICK-OFF'
-                            : 'START TIME',
-                        value: '${DateFormat('HH:mm').format(event.startTime)} WIB',
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Time Info
+                            _buildInfoColumn(
+                              label: event.sport.toLowerCase() == 'football'
+                                  ? 'KICK-OFF'
+                                  : 'START TIME',
+                              value:
+                                  '${DateFormat('HH:mm').format(event.startTime)} WIB',
+                            ),
+                            const SizedBox(height: 16),
+                            // Broadcast Info
+                            _buildInfoColumn(
+                              label: 'WATCH ON',
+                              value: event.broadcastChannel,
+                              valueColor: isHighHype
+                                  ? AppColors.primary
+                                  : AppColors.textPrimary,
+                            ),
+                          ],
+                        ),
                       ),
-
-                      // Vertical Divider
-                      Container(
-                        width: 1,
-                        height: 32,
-                        color: AppColors.textPrimary.withValues(alpha: 0.1),
-                        margin: const EdgeInsets.symmetric(horizontal: 20),
-                      ),
-
-                      // Broadcast Info
-                      _buildInfoColumn(
-                        label: 'WATCH ON',
-                        value: event.broadcastChannel,
-                        valueColor: isHighHype ? AppColors.primary : AppColors.textPrimary,
-                      ),
-
-                      const Spacer(),
 
                       // Notify Button
                       Container(

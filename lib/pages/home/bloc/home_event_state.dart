@@ -20,20 +20,32 @@ class FilterBySport extends HomeEvent {
   List<Object?> get props => [sport];
 }
 
+class ToggleHypeFilter extends HomeEvent {
+  final bool showOnlyHype;
+  const ToggleHypeFilter(this.showOnlyHype);
+
+  @override
+  List<Object?> get props => [showOnlyHype];
+}
+
 // --- STATES ---
 abstract class HomeState extends Equatable {
   final SportFilter selectedSport;
+  final bool showOnlyHype;
 
-  const HomeState({this.selectedSport = SportFilter.all});
+  const HomeState({
+    this.selectedSport = SportFilter.all,
+    this.showOnlyHype = true,
+  });
 
   @override
-  List<Object?> get props => [selectedSport];
+  List<Object?> get props => [selectedSport, showOnlyHype];
 }
 
 class HomeInitial extends HomeState {}
 
 class HomeLoading extends HomeState {
-  const HomeLoading({super.selectedSport});
+  const HomeLoading({super.selectedSport, super.showOnlyHype});
 }
 
 class HomeLoaded extends HomeState {
@@ -44,17 +56,19 @@ class HomeLoaded extends HomeState {
     required this.allEvents,
     required this.filteredEvents,
     super.selectedSport,
+    super.showOnlyHype,
   });
 
   @override
-  List<Object?> get props => [allEvents, filteredEvents, selectedSport];
+  List<Object?> get props =>
+      [allEvents, filteredEvents, selectedSport, showOnlyHype];
 }
 
 class HomeError extends HomeState {
   final String message;
 
-  const HomeError(this.message, {super.selectedSport});
+  const HomeError(this.message, {super.selectedSport, super.showOnlyHype});
 
   @override
-  List<Object?> get props => [message, selectedSport];
+  List<Object?> get props => [message, selectedSport, showOnlyHype];
 }

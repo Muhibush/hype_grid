@@ -6,6 +6,8 @@ import 'package:hype_grid/pages/home/bloc/home_event_state.dart';
 import 'package:hype_grid/pages/home/widget/date_section_header.dart';
 import 'package:hype_grid/pages/home/widget/hype_event_card.dart';
 import 'package:hype_grid/pages/home/widget/sport_filter_chips.dart';
+import 'package:hype_grid/pages/home/widget/hype_filter_fab.dart';
+import 'package:hype_grid/pages/home/widget/hype_empty_state.dart';
 import 'package:hype_grid/utils/app_colors.dart';
 import 'package:hype_grid/widget/hype_app_bar.dart';
 
@@ -21,92 +23,138 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _HomeScreenContent extends StatelessWidget {
+class _HomeScreenContent extends StatefulWidget {
   const _HomeScreenContent();
 
   @override
+  State<_HomeScreenContent> createState() => _HomeScreenContentState();
+}
+
+class _HomeScreenContentState extends State<_HomeScreenContent> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToTop() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: const HypeAppBar(),
-      body: ScrollConfiguration(
-        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-        child: BlocBuilder<HomeBloc, HomeState>(
-          builder: (context, state) {
-            final List<Widget> slivers = [];
+    return BlocConsumer<HomeBloc, HomeState>(
+      listener: (context, state) {
+        if (state is HomeLoaded) {
+          _scrollToTop();
+        }
+      },
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: const HypeAppBar(),
+          floatingActionButton: HypeFilterFAB(
+            isActive: state.showOnlyHype,
+            onTap: () {
+              context.read<HomeBloc>().add(
+                    ToggleHypeFilter(!state.showOnlyHype),
+                  );
+            },
+          ),
+          body: ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+            child: _buildBody(context, state),
+          ),
+        );
+      },
+    );
+  }
 
-            // 1. Sticky Filters (using SliverAppBar for stability)
-            slivers.add(
-              SliverAppBar(
-                pinned: true,
-                floating: false,
-                backgroundColor: AppColors.background.withValues(alpha: 0.9),
-                elevation: 0,
-                toolbarHeight: 0,
-                collapsedHeight: 70,
-                expandedHeight: 70,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Container(
-                    alignment: Alignment.center,
-                    child: SportFilterChips(
-                      selectedFilter: state.selectedSport,
-                      onSelected: (sport) {
-                        context.read<HomeBloc>().add(FilterBySport(sport));
-                      },
-                    ),
-                  ),
-                ),
-              ),
-            );
+  Widget _buildBody(BuildContext context, HomeState state) {
+    final List<Widget> slivers = [];
 
-            // 2. Content
-            if (state is HomeLoading || state is HomeInitial) {
-              slivers.add(
-                const SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  ),
-                ),
-              );
-            } else if (state is HomeError) {
-              slivers.add(
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(
-                    child: Text(
-                      'Error: ${state.message}',
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  ),
-                ),
-              );
-            } else if (state is HomeLoaded) {
-              slivers.add(_buildEventList(state.filteredEvents));
-            } else {
-              slivers.add(const SliverToBoxAdapter(child: SizedBox.shrink()));
-            }
-
-            return CustomScrollView(slivers: slivers);
-          },
+    // 1. Sticky Sport Filter
+    slivers.add(
+      SliverAppBar(
+        pinned: true,
+        floating: false,
+        backgroundColor: AppColors.background.withValues(alpha: 0.9),
+        elevation: 0,
+        toolbarHeight: 0,
+        collapsedHeight: 70,
+        expandedHeight: 70,
+        flexibleSpace: FlexibleSpaceBar(
+          background: Container(
+            alignment: Alignment.center,
+            child: SportFilterChips(
+              selectedFilter: state.selectedSport,
+              onSelected: (sport) {
+                context.read<HomeBloc>().add(FilterBySport(sport));
+              },
+            ),
+          ),
         ),
       ),
+    );
+
+    // 2. Content
+    if (state is HomeLoading || state is HomeInitial) {
+      slivers.add(
+        const SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
+        ),
+      );
+    } else if (state is HomeError) {
+      slivers.add(
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(
+            child: Text(
+              'Error: ${state.message}',
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ),
+      );
+    } else if (state is HomeLoaded) {
+      if (state.filteredEvents.isEmpty) {
+        slivers.add(
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: HypeEmptyState(
+              onReset: () {
+                context.read<HomeBloc>()
+                  ..add(const FilterBySport(SportFilter.all))
+                  ..add(const ToggleHypeFilter(false));
+              },
+            ),
+          ),
+        );
+      } else {
+        slivers.add(_buildEventList(state.filteredEvents));
+      }
+    } else {
+      slivers.add(const SliverToBoxAdapter(child: SizedBox.shrink()));
+    }
+
+    return CustomScrollView(
+      controller: _scrollController,
+      slivers: slivers,
     );
   }
 
   Widget _buildEventList(List<HypeEvent> events) {
-    if (events.isEmpty) {
-      return const SliverFillRemaining(
-        hasScrollBody: false,
-        child: Center(
-          child: Text(
-            'No events found for the selected filters.',
-            style: TextStyle(color: AppColors.textSecondary),
-          ),
-        ),
-      );
-    }
-
     // Grouping events by date
     final groupedEvents = <DateTime, List<HypeEvent>>{};
     for (var event in events) {
@@ -121,7 +169,7 @@ class _HomeScreenContent extends StatelessWidget {
     final sortedDates = groupedEvents.keys.toList()..sort();
 
     return SliverPadding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 100), // Space for FAB
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
