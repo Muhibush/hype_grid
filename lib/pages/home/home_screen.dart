@@ -5,7 +5,6 @@ import 'package:hype_grid/pages/home/bloc/home_bloc.dart';
 import 'package:hype_grid/pages/home/bloc/home_event_state.dart';
 import 'package:hype_grid/pages/home/widget/date_section_header.dart';
 import 'package:hype_grid/pages/home/widget/hype_event_card.dart';
-import 'package:hype_grid/pages/home/widget/mind_refresh_pills.dart';
 import 'package:hype_grid/pages/home/widget/sport_filter_chips.dart';
 import 'package:hype_grid/utils/app_colors.dart';
 import 'package:hype_grid/widget/hype_app_bar.dart';
@@ -41,15 +40,6 @@ class _HomeScreenContent extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      MindRefreshPills(
-                        selectedDuration: state.selectedDuration,
-                        onSelected: (duration) {
-                          context.read<HomeBloc>().add(
-                            FilterByDuration(duration),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 24),
                       SportFilterChips(
                         selectedFilter: state.selectedSport,
                         onSelected: (sport) {

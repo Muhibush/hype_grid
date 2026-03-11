@@ -14,8 +14,11 @@ A "Mind Refresh" app that shows a curated, high-hype list of Football, F1, Baske
 * **Database:** **Supabase** (PostgreSQL) – Handles user data and the event "Grid."
 * **Backend/Automation:** **GitHub Actions** (Python) – Runs the "Global Sync" once daily.
 * **Frontend:** **Flutter** – For the cross-platform list UI.
-* **APIs:**
-    * **Exclusive Provider:** ESPN (Hidden Scoreboard API) for all sports.
+* **APIs & Data Engines (Sport-First Modular):**
+    *   **ESPN Radar**: Primary for Football, NBA, F1, and MMA.
+    *   **PandaScore**: Dedicated for PC Esports (LoL, CS:GO, Dota 2, Valorant).
+    *   **Liquipedia (Scraper)**: Specialized for Mobile Legends (MLBB).
+    *   **ICS Feeds**: Dedicated for MotoGP (nixxo.github.io).
 
 ---
 
