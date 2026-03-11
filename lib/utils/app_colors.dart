@@ -6,6 +6,9 @@ class AppColors {
   static const Color background = Color(0xFF0D0D0D); // Very dark almost black
   static const Color surface = Color(0xFF141414); // Slightly lighter for cards
   static const Color surfaceHighlight = Color(0xFF1E1E1E);
+  static const Color surfaceGlass = Color(0x1AFFFFFF);
+  static const Color primaryGradientStart = Color(0xFFE94560);
+  static const Color primaryGradientEnd = Color(0xFF2A1A3E);
 
   static const Color primary = Color(
     0xFFE94560,
@@ -21,8 +24,8 @@ class AppColors {
   // Specific styling from mockups
   static const Color hypeBadgeBackground = primary;
   static const Color normalBadgeBackground = surfaceHighlight;
-  static const Color surfaceCard = Color(0xFF1A1A2E);
-  static const Color surfaceCardHype = Color(0xFF2A1A3E);
+  static const Color surfaceCard = Color(0xFF151515);
+  static const Color surfaceCardHype = Color(0xFF1A0B0E);
   static const Color navBarColor = Color(0xFF111111);
   static const Color divider = Color(0xFF222222);
 }

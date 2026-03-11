@@ -12,35 +12,26 @@ class HypeBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: isHighHype
             ? AppColors.hypeBadgeBackground
             : AppColors.normalBadgeBackground,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: isHighHype
-            ? [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.4),
-                  blurRadius: 12,
-                  spreadRadius: 2,
-                ),
-              ]
-            : null,
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (isHighHype) ...[
-            const Text('🔥', style: TextStyle(fontSize: 14)),
+            const Text('🔥', style: TextStyle(fontSize: 12)),
             const SizedBox(width: 4),
           ],
           Text(
             hypeScore.toString(),
             style: GoogleFonts.outfit(
               color: AppColors.textPrimary,
-              fontWeight: FontWeight.w800,
-              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
             ),
           ),
         ],
