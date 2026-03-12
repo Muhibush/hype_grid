@@ -1,4 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hype_grid/pages/home/bloc/home_bloc.dart';
+import 'package:hype_grid/pages/home/bloc/home_event_state.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hype_grid/model/hype_event.dart';
 import 'package:hype_grid/utils/app_colors.dart';
@@ -11,6 +15,7 @@ import 'package:hype_grid/services/calendar_service.dart';
 import 'package:intl/intl.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
 
@@ -66,10 +71,16 @@ class EventDetailScreen extends StatefulWidget {
 }
 
 class _EventDetailScreenState extends State<EventDetailScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late int _localCommunityHype;
   late AnimationController _animController;
   late Animation<double> _scaleAnimation;
+
+  // New Controller for the limit info banner
+  late AnimationController _limitInfoController;
+  late Animation<double> _limitSlideAnimation;
+  bool _isLimitInfoVisible = false;
+  Timer? _hideLimitTimer;
 
   @override
   void initState() {
@@ -82,44 +93,94 @@ class _EventDetailScreenState extends State<EventDetailScreen>
     _scaleAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeInOut),
     );
+
+    // Initialise professional slide animation
+    _limitInfoController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _limitSlideAnimation = CurvedAnimation(
+      parent: _limitInfoController,
+      curve: Curves.elasticOut,
+    );
+
+    _loadLocalContribution();
+  }
+
+  Future<void> _loadLocalContribution() async {
+    final prefs = await SharedPreferences.getInstance();
+    final today = DateTime.now().toIso8601String().split('T')[0];
+    final key = 'hype_${widget.event.eventId}_$today';
+    final savedContribution = prefs.getInt(key) ?? 0;
+    
+    if (mounted && savedContribution > 0) {
+      setState(() {
+        // We add the saved local contribution to the state
+        // but we need to be careful not to double-count if the DB has been updated.
+        // For simplicity as requested for "instant persistence", we trust the local plus.
+        _localCommunityHype = widget.event.communityHype + savedContribution;
+      });
+    }
   }
 
   @override
   void dispose() {
     _animController.dispose();
+    _limitInfoController.dispose();
+    _hideLimitTimer?.cancel();
     super.dispose();
   }
 
   int get _computedHypeScore {
-    int addedHype = _localCommunityHype;
-    if (addedHype > 20) addedHype = 20; // Cap community contribution locally
-    int total = widget.event.hypeScore + addedHype;
-    return total > 100 ? 100 : total;
+    return widget.event
+        .copyWith(communityHype: _localCommunityHype)
+        .totalHypeScore;
   }
 
   void _onHypeTapped() async {
     int added = await HypeDebouncer().increment(widget.event.eventId);
     if (added > 0) {
+      final newTotal = _localCommunityHype + added;
       setState(() {
-        _localCommunityHype += added;
+        _localCommunityHype = newTotal;
       });
+
+      // Reflection: Update HomeBloc state so the Grid is updated instantly
+      if (mounted) {
+        context.read<HomeBloc>().add(
+              UpdateCommunityHype(widget.event.eventId, newTotal),
+            );
+      }
+
       _animController.forward().then((_) => _animController.reverse());
     } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Text('Daily hype limit reached! '),
-                Icon(Icons.whatshot, size: 16, color: AppColors.primary),
-              ],
-            ),
-            duration: Duration(seconds: 2),
-            backgroundColor: AppColors.surfaceCard,
-          ),
-        );
-      }
+      _showLimitInfoBanner();
     }
+  }
+
+  void _showLimitInfoBanner() {
+    if (!mounted) return;
+    
+    // Reset timer
+    _hideLimitTimer?.cancel();
+    
+    setState(() {
+      _isLimitInfoVisible = true;
+    });
+    
+    _limitInfoController.forward();
+    
+    _hideLimitTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted) {
+        _limitInfoController.reverse().then((_) {
+          if (mounted) {
+            setState(() {
+              _isLimitInfoVisible = false;
+            });
+          }
+        });
+      }
+    });
   }
 
   Future<void> _shareEvent() async {
@@ -143,8 +204,13 @@ class _EventDetailScreenState extends State<EventDetailScreen>
       );
     } catch (e) {
       if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to share: $e')),
+          SnackBar(
+            content: Text('Failed to share: $e'),
+            backgroundColor: AppColors.surfaceHighlight,
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     }
@@ -162,50 +228,66 @@ class _EventDetailScreenState extends State<EventDetailScreen>
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          children: [
-            // Header
+      body: Stack(
+        children: [
+          SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              children: [
+            // Header Row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    SportTag(sport: widget.event.sport),
-                    const SizedBox(width: 8),
-                    Text(
-                      widget.event.metadata?['league']?.toUpperCase() ??
-                          widget.event.sport.toUpperCase(),
-                      style: GoogleFonts.inter(
-                        color: AppColors.textSecondary,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                  ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SportTag(sport: widget.event.sport, compact: false),
+                      if (widget.event.metadata?['league'] != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          widget.event.metadata!['league'].toString().toUpperCase(),
+                          style: GoogleFonts.inter(
+                            color: AppColors.textSecondary,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
                 GestureDetector(
                   onTap: _onHypeTapped,
                   child: ScaleTransition(
                     scale: _scaleAnimation,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceHighlight,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.primary.withAlpha(50)),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                       child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.whatshot, size: 16, color: AppColors.primary),
-                          const SizedBox(width: 4),
+                          const Icon(Icons.whatshot, size: 20, color: AppColors.primary),
+                          const SizedBox(width: 6),
                           Text(
                             '$_localCommunityHype',
                             style: GoogleFonts.outfit(
                               color: AppColors.textPrimary,
                               fontWeight: FontWeight.bold,
+                              fontSize: 16,
                             ),
                           ),
                         ],
@@ -215,33 +297,22 @@ class _EventDetailScreenState extends State<EventDetailScreen>
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 24),
+
+            // Title
             Text(
               widget.event.title,
               style: GoogleFonts.outfit(
                 color: AppColors.textPrimary,
-                fontSize: 28,
+                fontSize: 32,
                 fontWeight: FontWeight.bold,
-              ),
-            ),
-            // Placeholder for Hero Image (would normally be in metadata)
-            Container(
-              height: 180,
-              margin: const EdgeInsets.symmetric(vertical: 24),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceHighlight,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Center(
-                child: Icon(
-                  Icons.image_outlined,
-                  size: 48,
-                  color: AppColors.textSecondary.withValues(alpha: 0.5),
-                ),
+                height: 1.1,
               ),
             ),
 
-            // Hype Score
+            const SizedBox(height: 32),
+
+            // Hype Score (Moved up)
             HypeScoreBar(score: _computedHypeScore),
 
             const SizedBox(height: 32),
@@ -262,7 +333,7 @@ class _EventDetailScreenState extends State<EventDetailScreen>
                   child: _buildInfoCard(
                     icon: Icons.access_time_rounded,
                     label: widget.event.sport.toLowerCase() == 'football'
-                        ? 'KICKOFF'
+                        ? 'KICK-OFF'
                         : 'START TIME',
                     value:
                         '${DateFormat('HH:mm').format(widget.event.startTime)} WIB',
@@ -285,7 +356,7 @@ class _EventDetailScreenState extends State<EventDetailScreen>
                 Expanded(
                   child: _buildInfoCard(
                     icon: Icons.tv_rounded,
-                    label: 'BROADCASTER',
+                    label: 'WATCH ON',
                     value: widget.event.broadcastChannel,
                   ),
                 ),
@@ -368,8 +439,89 @@ class _EventDetailScreenState extends State<EventDetailScreen>
           ],
         ),
       ),
-    );
-  }
+      _buildLimitOverlay(),
+    ],
+  ),
+);
+}
+
+Widget _buildLimitOverlay() {
+if (!_isLimitInfoVisible) return const SizedBox.shrink();
+
+return Positioned(
+  top: 0,
+  left: 24,
+  right: 24,
+  child: AnimatedBuilder(
+    animation: _limitSlideAnimation,
+    builder: (context, child) {
+      double yOffset = -80 * (1.0 - _limitSlideAnimation.value);
+      return Transform.translate(
+        offset: Offset(0, yOffset + 10),
+        child: Opacity(
+          opacity: _limitSlideAnimation.value.clamp(0.0, 1.0),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.surfaceHighlight,
+                  AppColors.surfaceCard.withValues(alpha: 0.9),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.3),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                  blurRadius: 25,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.info_outline_rounded,
+                    color: AppColors.textSecondary, size: 20),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'DAILY LIMIT REACHED',
+                        style: GoogleFonts.inter(
+                          color: AppColors.primary,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      Text(
+                        'Hype cap met for this event 🔥',
+                        style: GoogleFonts.inter(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  ),
+);
+}
 
   Widget _buildInfoCard({
     required IconData icon,
@@ -377,40 +529,36 @@ class _EventDetailScreenState extends State<EventDetailScreen>
     required String value,
   }) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.surfaceCard,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.divider.withValues(alpha: 0.5)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(icon, color: AppColors.primary, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: GoogleFonts.inter(
-                    color: AppColors.textSecondary,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: GoogleFonts.outfit(
-                    color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+          const SizedBox(height: 12),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              color: AppColors.textSecondary.withValues(alpha: 0.7),
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1,
             ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: GoogleFonts.outfit(
+              color: AppColors.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

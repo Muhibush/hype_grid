@@ -28,6 +28,15 @@ class ToggleHypeFilter extends HomeEvent {
   List<Object?> get props => [showOnlyHype];
 }
 
+class UpdateCommunityHype extends HomeEvent {
+  final String eventId;
+  final int newCommunityHype;
+  const UpdateCommunityHype(this.eventId, this.newCommunityHype);
+
+  @override
+  List<Object?> get props => [eventId, newCommunityHype];
+}
+
 // --- STATES ---
 abstract class HomeState extends Equatable {
   final SportFilter selectedSport;

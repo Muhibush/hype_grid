@@ -21,7 +21,7 @@ class HypeEventCard extends StatelessWidget {
     required this.onCalendarAdd,
   });
 
-  bool get isHighHype => event.hypeScore >= 90;
+  bool get isHighHype => event.totalHypeScore >= 90;
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +125,7 @@ class HypeEventCard extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          HypeBadge(hypeScore: event.hypeScore),
+                          HypeBadge(hypeScore: event.totalHypeScore),
                           const SizedBox(height: 4),
                           Text(
                             'Hype Score',

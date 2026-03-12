@@ -13,6 +13,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<LoadHomeEvents>(_onLoadEvents);
     on<FilterBySport>(_onFilterSport);
     on<ToggleHypeFilter>(_onToggleHypeFilter);
+    on<UpdateCommunityHype>(_onUpdateCommunityHype);
   }
 
   void _onLoadEvents(LoadHomeEvents event, Emitter<HomeState> emit) async {
@@ -63,6 +64,28 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         currentState.allEvents,
         currentState.selectedSport,
         event.showOnlyHype,
+      );
+    }
+  }
+
+  void _onUpdateCommunityHype(
+    UpdateCommunityHype event,
+    Emitter<HomeState> emit,
+  ) {
+    if (state is HomeLoaded) {
+      final currentState = state as HomeLoaded;
+      final updatedAllEvents = currentState.allEvents.map((hypeEvent) {
+        if (hypeEvent.eventId == event.eventId) {
+          return hypeEvent.copyWith(communityHype: event.newCommunityHype);
+        }
+        return hypeEvent;
+      }).toList();
+
+      _emitLoadedWithFilters(
+        emit,
+        updatedAllEvents,
+        currentState.selectedSport,
+        currentState.showOnlyHype,
       );
     }
   }
