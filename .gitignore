@@ -47,7 +47,10 @@ app.*.map.json
 # HypeGrid Secrets & Environment
 .env
 .env.local
+.env.dev
+.env.prod
 *.env
+__pycache__/
 ios/Runner/GoogleService-Info.plist
 android/app/google-services.json
 scripts/firebase-service-account.json

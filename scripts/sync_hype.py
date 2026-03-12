@@ -9,7 +9,14 @@ from icalendar import Calendar
 from playwright.sync_api import sync_playwright
 
 # Load environment variables
-load_dotenv()
+env = os.getenv("APP_ENV", "dev")
+env_file = f".env.{env}"
+if os.path.exists(env_file):
+    print(f"Loading environment from {env_file}")
+    load_dotenv(env_file)
+else:
+    print(f"Loading default environment from .env")
+    load_dotenv()
 
 # Configuration
 SUPABASE_URL = os.getenv("SUPABASE_URL")

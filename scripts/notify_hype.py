@@ -7,7 +7,14 @@ import firebase_admin
 from firebase_admin import credentials, messaging
 
 # Load environment variables
-load_dotenv()
+env = os.getenv("APP_ENV", "dev")
+env_file = f".env.{env}"
+if os.path.exists(env_file):
+    print(f"Loading environment from {env_file}")
+    load_dotenv(env_file)
+else:
+    print(f"Loading default environment from .env")
+    load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SECRET_KEY") or os.getenv("SUPABASE_SERVICE_ROLE_KEY")

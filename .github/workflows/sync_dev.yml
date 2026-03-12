@@ -1,13 +1,10 @@
-name: Global Sync
+name: Sync - Development (Manual)
 
 on:
-  schedule:
-    # Runs at 05:00 AM WIB (22:00 UTC) every day
-    - cron: '0 22 * * *'
-  workflow_dispatch: # Allows manual triggering from the Actions tab
+  workflow_dispatch: # Manual trigger only
 
 jobs:
-  sync:
+  sync_dev:
     runs-on: ubuntu-latest
     
     steps:
@@ -25,9 +22,11 @@ jobs:
           pip install -r scripts/requirements.txt
           python -m playwright install chromium
 
-      - name: Run Global Sync
+      - name: Run Sync (DEV)
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          APP_ENV: dev
+          SUPABASE_URL: ${{ secrets.DEV_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.DEV_SUPABASE_SECRET_KEY }}
           API_SPORTS_KEY: ${{ secrets.API_SPORTS_KEY }}
+          PANDASCORE_API_KEY: ${{ secrets.PANDASCORE_API_KEY }}
         run: python scripts/sync_hype.py

@@ -1,11 +1,11 @@
 {
-    "name": "hype_grid",
-    "short_name": "hype_grid",
+    "name": "HypeGrid",
+    "short_name": "HypeGrid",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0D0D0D",
     "theme_color": "#E94560",
-    "description": "A new Flutter project.",
+    "description": "A Mind Refresh app for curated high-hype sports events.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

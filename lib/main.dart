@@ -8,13 +8,15 @@ import 'package:hype_grid/services/notification_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
+import 'package:hype_grid/utils/environment.dart';
 import 'package:hype_grid/firebase_options.dart';
 
-Future<void> main() async {
+Future<void> initApp(AppEnvironment environment) async {
   WidgetsFlutterBinding.ensureInitialized();
+  Environment.setEnvironment(environment);
 
   // Load environment variables
-  await dotenv.load(fileName: ".env");
+  await dotenv.load(fileName: Environment.envFileName);
 
   // Initialize Supabase
   await SupabaseService().initialize();
@@ -30,6 +32,10 @@ Future<void> main() async {
   }
 
   runApp(const HypeGridApp());
+}
+
+Future<void> main() async {
+  await initApp(AppEnvironment.dev);
 }
 
 class HypeGridApp extends StatefulWidget {
