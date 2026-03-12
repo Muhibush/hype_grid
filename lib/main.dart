@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hype_grid/utils/app_theme.dart';
 import 'package:hype_grid/pages/splash/splash_screen.dart';
@@ -7,6 +8,8 @@ import 'package:hype_grid/pages/detail/event_detail_screen.dart';
 import 'package:hype_grid/services/notification_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'package:hype_grid/utils/environment.dart';
 import 'package:hype_grid/firebase_options.dart';
@@ -14,6 +17,12 @@ import 'package:hype_grid/firebase_options.dart';
 Future<void> initApp(AppEnvironment environment) async {
   WidgetsFlutterBinding.ensureInitialized();
   Environment.setEnvironment(environment);
+
+  HydratedBloc.storage = await HydratedStorage.build(
+    storageDirectory: kIsWeb
+        ? HydratedStorageDirectory.web
+        : HydratedStorageDirectory((await getApplicationDocumentsDirectory()).path),
+  );
 
   // Load environment variables
   await dotenv.load(fileName: Environment.envFileName);

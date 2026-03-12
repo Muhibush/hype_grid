@@ -81,3 +81,43 @@ class HomeError extends HomeState {
   @override
   List<Object?> get props => [message, selectedSport, showOnlyHype];
 }
+
+HomeState? homeStateFromJson(Map<String, dynamic> json) {
+  try {
+    if (json['type'] == 'HomeLoaded') {
+      final allEvents = (json['allEvents'] as List)
+          .map((e) => HypeEvent.fromJson(e))
+          .toList();
+      final filteredEvents = (json['filteredEvents'] as List)
+          .map((e) => HypeEvent.fromJson(e))
+          .toList();
+      final selectedSportStr = json['selectedSport'] as String?;
+      final selectedSport = SportFilter.values.firstWhere(
+        (e) => e.name == selectedSportStr,
+        orElse: () => SportFilter.all,
+      );
+      final showOnlyHype = json['showOnlyHype'] as bool? ?? true;
+
+      return HomeLoaded(
+        allEvents: allEvents,
+        filteredEvents: filteredEvents,
+        selectedSport: selectedSport,
+        showOnlyHype: showOnlyHype,
+      );
+    }
+  } catch (_) {}
+  return null;
+}
+
+Map<String, dynamic>? homeStateToJson(HomeState state) {
+  if (state is HomeLoaded) {
+    return {
+      'type': 'HomeLoaded',
+      'allEvents': state.allEvents.map((e) => e.toJson()).toList(),
+      'filteredEvents': state.filteredEvents.map((e) => e.toJson()).toList(),
+      'selectedSport': state.selectedSport.name,
+      'showOnlyHype': state.showOnlyHype,
+    };
+  }
+  return null;
+}

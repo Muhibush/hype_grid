@@ -1,10 +1,10 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:hype_grid/model/hype_event.dart';
 import 'package:hype_grid/pages/home/widget/sport_filter_chips.dart';
 import 'package:hype_grid/services/hype_repository.dart';
 import 'home_event_state.dart';
 
-class HomeBloc extends Bloc<HomeEvent, HomeState> {
+class HomeBloc extends HydratedBloc<HomeEvent, HomeState> {
   final HypeRepository _repository;
 
   HomeBloc({HypeRepository? repository})
@@ -16,13 +16,26 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<UpdateCommunityHype>(_onUpdateCommunityHype);
   }
 
+  @override
+  HomeState? fromJson(Map<String, dynamic> json) => homeStateFromJson(json);
+
+  @override
+  Map<String, dynamic>? toJson(HomeState state) => homeStateToJson(state);
+
   void _onLoadEvents(LoadHomeEvents event, Emitter<HomeState> emit) async {
-    emit(
-      HomeLoading(
-        selectedSport: state.selectedSport,
-        showOnlyHype: state.showOnlyHype,
-      ),
-    );
+    // Determine the loading state
+    if (state is HomeLoaded) {
+      // If we already have a loaded state, keep it while we fetch
+      // But we can optionally emit a refreshing state or just continue relying on the previous data
+      // For now, let's just fetch silently or you could show an indicator.
+    } else {
+      emit(
+        HomeLoading(
+          selectedSport: state.selectedSport,
+          showOnlyHype: state.showOnlyHype,
+        ),
+      );
+    }
 
     try {
       final events = await _repository.fetchEvents();
@@ -34,13 +47,17 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         state.showOnlyHype,
       );
     } catch (e) {
-      emit(
-        HomeError(
-          e.toString(),
-          selectedSport: state.selectedSport,
-          showOnlyHype: state.showOnlyHype,
-        ),
-      );
+      // Offline: if we have cache, we keep the HomeLoaded state from hydrated storage.
+      // If we don't have it, and we are in Initial/Loading, emit Error.
+      if (state is! HomeLoaded) {
+        emit(
+          HomeError(
+            e.toString(),
+            selectedSport: state.selectedSport,
+            showOnlyHype: state.showOnlyHype,
+          ),
+        );
+      }
     }
   }
 
