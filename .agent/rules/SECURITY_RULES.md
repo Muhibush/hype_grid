@@ -12,9 +12,6 @@ These are mandatory security practices for anyone working on the HypeGrid reposi
 
 - **NEVER** commit `.env` or `.env.local` files.
 - **PROACTIVELY** verify that any API keys or client secrets are added to `.gitignore`.
-- **Project-specific sensitive files:**
-    - `ios/Runner/GoogleService-Info.plist` (If Firebase is added)
-    - `android/app/google-services.json` (If Firebase is added)
     - `.env` (Containing `SUPABASE_KEY`, `API_FOOTBALL_KEY`, etc.)
 
 ---
