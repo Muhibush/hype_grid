@@ -1,1 +1,46 @@
-{"flutter":{"platforms":{"dart":{"lib/firebase_options.dart":{"projectId":"hypegrid-17","configurations":{"web":"1:290179855905:web:0699d10dff3e3b759f9560"}}}}}}
+{
+  "hosting": {
+    "public": "build/web",
+    "ignore": [
+      "firebase.json",
+      "**/.DS_Store"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "flutter": {
+    "platforms": {
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "hypegrid-17",
+          "configurations": {
+            "web": "1:290179855905:web:0699d10dff3e3b759f9560"
+          }
+        },
+        "lib/firebase_options_dev.dart": {
+          "projectId": "hypegrid-dev",
+          "configurations": {
+            "web": "1:965061830135:web:76b3e4025b4a374df1baf2"
+          }
+        },
+        "lib/firebase_options_prod.dart": {
+          "projectId": "hypegrid-prod",
+          "configurations": {
+            "web": "1:1044910290762:web:78afba17d35a1712faf3b3"
+          }
+        }
+      },
+      "android": {
+        "default": {
+          "projectId": "hypegrid-prod",
+          "appId": "1:1044910290762:android:ad4b935ef286c63afaf3b3",
+          "fileOutput": "android/app/google-services.json"
+        }
+      }
+    }
+  }
+}

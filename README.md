@@ -39,16 +39,14 @@ Events are scored from 0-100 based on:
 ## 🛠️ Local Development Setup
 
 ### 1. Environment Configuration
-The project supports separate Development and Production environments via multi-env files:
-- `.env.dev` - Used for local development (default).
-- `.env.prod` - Used for production builds.
+The project uses separate `.env.dev` and `.env.prod` files. The generic `.env` is **not used** and should be removed.
 
 Create your environment files:
 ```bash
 cp .env.example .env.dev
 cp .env.example .env.prod
 ```
-Fill in the respective keys for each environment.
+Fill in the respective keys for each environment. *Note: Ensure these are in your `.gitignore`.*
 
 ### 2. Database (Supabase)
 Run the SQL setup from `supabase_setup_guide.md` in your Supabase SQL Editor. This includes:
@@ -56,7 +54,7 @@ Run the SQL setup from `supabase_setup_guide.md` in your Supabase SQL Editor. Th
 - Creating the `increment_community_hype` RPC function.
 
 ### 3. Sync Script (Python)
-Run the sync script for a specific environment using the `APP_ENV` variable:
+Run the sync script for a specific environment using the `APP_ENV` variable. The script will automatically load the corresponding `.env.{APP_ENV}` file:
 ```bash
 pip install -r scripts/requirements.txt
 playwright install chromium
@@ -68,17 +66,32 @@ APP_ENV=dev python3 scripts/sync_hype.py
 APP_ENV=prod python3 scripts/sync_hype.py
 ```
 
-### 4. Flutter App
-Run the app using environment-specific entry points:
+### 4. Flutter App (Local Run)
+Use the automated helper script to run the app with the correct environment:
 
-**Development:**
+**Development (Default):**
 ```bash
-flutter run -t lib/main_dev.dart
+./scripts/run.sh dev
+# or simply
+./scripts/run.sh
 ```
 
 **Production:**
 ```bash
-flutter run -t lib/main_prod.dart
+./scripts/run.sh prod
+```
+
+### 5. Deployment (Manual)
+To deploy the web application to Firebase Hosting:
+
+**Deploy to Dev:**
+```bash
+./scripts/deploy.sh dev
+```
+
+**Deploy to Prod:**
+```bash
+./scripts/deploy.sh prod
 ```
 
 ---

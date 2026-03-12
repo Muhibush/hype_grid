@@ -4,23 +4,13 @@ enum AppEnvironment {
 }
 
 class Environment {
-  static AppEnvironment _current = AppEnvironment.dev;
+  static const String _env = String.fromEnvironment('APP_ENV', defaultValue: 'dev');
 
-  static AppEnvironment get current => _current;
+  static AppEnvironment get current => 
+      _env == 'prod' ? AppEnvironment.prod : AppEnvironment.dev;
 
-  static void setEnvironment(AppEnvironment env) {
-    _current = env;
-  }
+  static String get envFileName => 'env.$_env';
 
-  static String get envFileName {
-    switch (_current) {
-      case AppEnvironment.prod:
-        return '.env.prod';
-      case AppEnvironment.dev:
-        return '.env.dev';
-    }
-  }
-
-  static bool get isDev => _current == AppEnvironment.dev;
-  static bool get isProd => _current == AppEnvironment.prod;
+  static bool get isDev => current == AppEnvironment.dev;
+  static bool get isProd => current == AppEnvironment.prod;
 }

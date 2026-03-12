@@ -12,11 +12,11 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:hype_grid/utils/environment.dart';
-import 'package:hype_grid/firebase_options.dart';
+import 'package:hype_grid/firebase_options_dev.dart' as dev;
+import 'package:hype_grid/firebase_options_prod.dart' as prod;
 
-Future<void> initApp(AppEnvironment environment) async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Environment.setEnvironment(environment);
 
   HydratedBloc.storage = await HydratedStorage.build(
     storageDirectory: kIsWeb
@@ -24,16 +24,22 @@ Future<void> initApp(AppEnvironment environment) async {
         : HydratedStorageDirectory((await getApplicationDocumentsDirectory()).path),
   );
 
-  // Load environment variables
+  // Load environment variables based on APP_ENV flag
   await dotenv.load(fileName: Environment.envFileName);
+  
+  debugPrint('Running in ${Environment.current.name} mode, loading ${Environment.envFileName}');
 
   // Initialize Supabase
   await SupabaseService().initialize();
 
-  // Initialize Firebase (wrapped in try-catch in case config is missing)
+  // Initialize Firebase (using aliased options)
   try {
+    final firebaseOptions = Environment.isProd
+        ? prod.DefaultFirebaseOptions.currentPlatform
+        : dev.DefaultFirebaseOptions.currentPlatform;
+
     await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
+      options: firebaseOptions,
     );
     await NotificationService().initialize();
   } catch (e) {
@@ -41,10 +47,6 @@ Future<void> initApp(AppEnvironment environment) async {
   }
 
   runApp(const HypeGridApp());
-}
-
-Future<void> main() async {
-  await initApp(AppEnvironment.dev);
 }
 
 class HypeGridApp extends StatefulWidget {

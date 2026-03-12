@@ -44,9 +44,10 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# HypeGrid Secrets & Environment
-.env
-.env.local
+# HypeGrid Secrets & Environment variables
+env.dev
+env.prod
+env.examplelocal
 .env.dev
 .env.prod
 *.env

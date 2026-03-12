@@ -8,15 +8,23 @@ from dotenv import load_dotenv
 from icalendar import Calendar
 from playwright.sync_api import sync_playwright
 
-# Load environment variables
-env = os.getenv("APP_ENV", "dev")
-env_file = f".env.{env}"
+# Determine environment
+env_file = f"env.{app_env}"
+
+# Load environment variables (Local file overrides system env if present, 
+# but GitHub Actions will provide system env)
 if os.path.exists(env_file):
-    print(f"Loading environment from {env_file}")
     load_dotenv(env_file)
+    print(f"✅ Loaded {env_file}")
+elif os.path.exists(os.path.join(os.path.dirname(__file__), '..', env_file)):
+    load_dotenv(os.path.join(os.path.dirname(__file__), '..', env_file))
+    print(f"✅ Loaded ../{env_file}")
 else:
-    print(f"Loading default environment from .env")
     load_dotenv()
+    print(f"ℹ️ {env_file} not found, using system environment variables")
+
+# Retrieve APP_ENV again just in case it was set in the file
+env = os.getenv("APP_ENV", "dev")
 
 # Configuration
 SUPABASE_URL = os.getenv("SUPABASE_URL")

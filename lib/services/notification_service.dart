@@ -1,7 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:hype_grid/firebase_options.dart';
+import 'package:hype_grid/utils/environment.dart';
+import 'package:hype_grid/firebase_options_dev.dart' as dev;
+import 'package:hype_grid/firebase_options_prod.dart' as prod;
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -44,10 +46,12 @@ class NotificationService {
   }
 
   static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-    // If you're going to use other Firebase services in the background, 
-    // such as Firestore, make sure you call `Firebase.initializeApp()` first.
+    final options = Environment.isProd
+        ? prod.DefaultFirebaseOptions.currentPlatform
+        : dev.DefaultFirebaseOptions.currentPlatform;
+
     await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
+      options: options,
     );
     if (kDebugMode) {
       print("Handling a background message: ${message.messageId}");
