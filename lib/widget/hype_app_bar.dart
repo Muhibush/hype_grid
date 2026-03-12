@@ -17,7 +17,7 @@ class HypeAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🔥', style: TextStyle(fontSize: 22)),
+            Icon(Icons.whatshot, size: 22, color: AppColors.primary),
             const SizedBox(width: 10),
             Text(
               'HYPE',

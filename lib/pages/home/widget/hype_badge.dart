@@ -23,7 +23,7 @@ class HypeBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (isHighHype) ...[
-            const Text('🔥', style: TextStyle(fontSize: 12)),
+            Icon(Icons.whatshot, size: 12, color: AppColors.textPrimary),
             const SizedBox(width: 4),
           ],
           Text(

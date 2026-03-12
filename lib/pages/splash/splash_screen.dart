@@ -112,7 +112,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('🔥', style: TextStyle(fontSize: 40)),
+                  Icon(Icons.whatshot, size: 40, color: AppColors.primary),
                   const SizedBox(width: 8),
                   Text(
                     'HYPE',

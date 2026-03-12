@@ -108,7 +108,12 @@ class _EventDetailScreenState extends State<EventDetailScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Daily hype limit reached for this event! 🔥'),
+            content: Row(
+              children: [
+                Text('Daily hype limit reached! '),
+                Icon(Icons.whatshot, size: 16, color: AppColors.primary),
+              ],
+            ),
             duration: Duration(seconds: 2),
             backgroundColor: AppColors.surfaceCard,
           ),
@@ -194,7 +199,7 @@ class _EventDetailScreenState extends State<EventDetailScreen>
                       ),
                       child: Row(
                         children: [
-                          const Text('🔥', style: TextStyle(fontSize: 16)),
+                          Icon(Icons.whatshot, size: 16, color: AppColors.primary),
                           const SizedBox(width: 4),
                           Text(
                             '$_localCommunityHype',
