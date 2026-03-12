@@ -9,6 +9,7 @@ from icalendar import Calendar
 from playwright.sync_api import sync_playwright
 
 # Determine environment
+app_env = os.getenv("APP_ENV", "dev")
 env_file = f"env.{app_env}"
 
 # Load environment variables (Local file overrides system env if present, 
@@ -23,8 +24,8 @@ else:
     load_dotenv()
     print(f"ℹ️ {env_file} not found, using system environment variables")
 
-# Retrieve APP_ENV again just in case it was set in the file
-env = os.getenv("APP_ENV", "dev")
+# Retrieve app_env again just in case it was set in the file
+app_env = os.getenv("APP_ENV", "dev")
 
 # Configuration
 SUPABASE_URL = os.getenv("SUPABASE_URL")
