@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1044910290762",
+    "project_id": "hypegrid-prod",
+    "storage_bucket": "hypegrid-prod.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1044910290762:android:ad4b935ef286c63afaf3b3",
+        "android_client_info": {
+          "package_name": "com.example.hype_grid"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6TMQlxzQlbOqr6KuMXSsfiDaSNECmzK4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -52,15 +52,6 @@ env.examplelocal
 .env.prod
 *.env
 __pycache__/
-ios/Runner/GoogleService-Info.plist
-android/app/google-services.json
-scripts/firebase-service-account.json
-scripts/hypegrid-dev-firebase-adminsdk-fbsvc-81f390dac7.json
-scripts/hypegrid-prod-firebase-adminsdk-fbsvc-e505f9f22d.json
-lib/firebase_options.dart
 
 # Generated Code
 *.g.dart
-
-lib/firebase_options_dev.dart
-lib/firebase_options_prod.dart
