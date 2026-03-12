@@ -109,14 +109,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
 
     // 2. Content
     if (state is HomeLoading || state is HomeInitial) {
-      slivers.add(
-        const SliverFillRemaining(
-          hasScrollBody: false,
-          child: Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
-          ),
-        ),
-      );
+      // Removed CircularProgressIndicator as requested
     } else if (state is HomeError) {
       slivers.add(
         SliverFillRemaining(

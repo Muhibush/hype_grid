@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hype_grid/pages/home/bloc/home_bloc.dart';
 import 'package:hype_grid/pages/home/bloc/home_event_state.dart';
@@ -184,31 +185,76 @@ class _EventDetailScreenState extends State<EventDetailScreen>
   }
 
   Future<void> _shareEvent() async {
+    // Show loading overlay
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      ),
+    );
+
     try {
       final screenshotController = ScreenshotController();
       final imageBytes = await screenshotController.captureFromWidget(
-        ShareableEventCard(
-          event: widget.event,
-          computedHypeScore: _computedHypeScore,
+        Material(
+          color: Colors.transparent,
+          child: ShareableEventCard(
+            event: widget.event,
+            computedHypeScore: _computedHypeScore,
+          ),
         ),
-        delay: const Duration(milliseconds: 100),
+        delay: const Duration(milliseconds: 400),
       );
 
-      final directory = await getApplicationDocumentsDirectory();
-      final imagePath = await File('${directory.path}/share_${widget.event.eventId}.png').create();
-      await imagePath.writeAsBytes(imageBytes);
+      // Hide loading overlay
+      if (mounted) Navigator.of(context).pop();
 
-      await Share.shareXFiles(
-        [XFile(imagePath.path)],
-        text: 'Check out ${widget.event.title} on HypeGrid! 🔥\nhypegrid://hype.grid/event/${widget.event.eventId}',
+      final XFile xFile;
+      if (kIsWeb) {
+        xFile = XFile.fromData(
+          imageBytes,
+          name: 'share_${widget.event.eventId}.png',
+          mimeType: 'image/png',
+        );
+      } else {
+        final directory = await getTemporaryDirectory();
+        final file = File('${directory.path}/share_${widget.event.eventId}.png');
+        await file.writeAsBytes(imageBytes);
+        xFile = XFile(file.path);
+      }
+
+      final String shareText = [
+        '🔥 HIGH-HYPE ALERT: ${widget.event.title}',
+        '',
+        'The anticipation is off the charts! 🏟️ Catch the most anticipated sports event of the week:',
+        '',
+        '📅 Date: ${DateFormat('EEEE, d MMM yyyy').format(widget.event.startTime)}',
+        '🕒 Time: ${DateFormat('HH:mm').format(widget.event.startTime)} WIB',
+        '📺 Watch on: ${widget.event.broadcastChannel}',
+        '⚡ Hype Score: $_computedHypeScore/100',
+        '',
+        'Join the community on HypeGrid and track the biggest sports moments live. 🚀',
+        '',
+        '#HypeGrid #SportsID #MindRefresh',
+      ].join('\n');
+
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [xFile],
+          text: shareText,
+        ),
       );
     } catch (e) {
+      // Hide loading overlay if still showing
+      if (mounted) Navigator.of(context).pop();
+      
       if (mounted) {
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to share: $e'),
-            backgroundColor: AppColors.surfaceHighlight,
+            backgroundColor: AppColors.primary,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -557,8 +603,6 @@ return Positioned(
               fontSize: 15,
               fontWeight: FontWeight.bold,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

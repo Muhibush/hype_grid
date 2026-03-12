@@ -51,8 +51,8 @@ class _HypeGridAppState extends State<HypeGridApp> {
   Future<void> _setupInteractedMessage() async {
     // Get any messages which caused the application to open from
     // a terminated state.
-    RemoteMessage? initialMessage =
-        await FirebaseMessaging.instance.getInitialMessage();
+    RemoteMessage? initialMessage = await FirebaseMessaging.instance
+        .getInitialMessage();
 
     if (initialMessage != null) {
       _handleMessage(initialMessage);
