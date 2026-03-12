@@ -8,6 +8,7 @@ import 'package:hype_grid/pages/home/widget/hype_event_card.dart';
 import 'package:hype_grid/pages/home/widget/sport_filter_chips.dart';
 import 'package:hype_grid/pages/home/widget/hype_filter_fab.dart';
 import 'package:hype_grid/pages/home/widget/hype_empty_state.dart';
+import 'package:hype_grid/services/calendar_service.dart';
 import 'package:hype_grid/utils/app_colors.dart';
 import 'package:hype_grid/widget/hype_app_bar.dart';
 
@@ -86,7 +87,8 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
       SliverAppBar(
         pinned: true,
         floating: false,
-        backgroundColor: AppColors.background.withValues(alpha: 0.9),
+        backgroundColor: AppColors.background,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         toolbarHeight: 0,
         collapsedHeight: 70,
@@ -142,7 +144,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
           ),
         );
       } else {
-        slivers.add(_buildEventList(state.filteredEvents));
+        slivers.add(_buildEventList(context, state));
       }
     } else {
       slivers.add(const SliverToBoxAdapter(child: SizedBox.shrink()));
@@ -154,7 +156,8 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
     );
   }
 
-  Widget _buildEventList(List<HypeEvent> events) {
+  Widget _buildEventList(BuildContext context, HomeLoaded state) {
+    final events = state.filteredEvents;
     // Grouping events by date
     final groupedEvents = <DateTime, List<HypeEvent>>{};
     for (var event in events) {
@@ -186,9 +189,14 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
               // Events in this date
               if (index < currentCount + eventsForDate.length) {
                 final eventIndex = index - currentCount;
+                final event = eventsForDate[eventIndex];
+
                 return HypeEventCard(
-                  event: eventsForDate[eventIndex],
-                  onTap: () {}, // TODO
+                  event: event,
+                  onTap: () {},
+                  onCalendarAdd: () {
+                    CalendarService.addEventToCalendar(event);
+                  },
                 );
               }
               currentCount += eventsForDate.length;

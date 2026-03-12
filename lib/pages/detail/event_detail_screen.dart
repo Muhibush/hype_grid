@@ -7,6 +7,7 @@ import 'package:hype_grid/widget/hype_score_bar.dart';
 import 'package:hype_grid/services/hype_repository.dart';
 import 'package:hype_grid/services/hype_debouncer.dart';
 import 'package:hype_grid/pages/detail/widget/shareable_event_card.dart';
+import 'package:hype_grid/services/calendar_service.dart';
 import 'package:intl/intl.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:path_provider/path_provider.dart';
@@ -313,8 +314,10 @@ class _EventDetailScreenState extends State<EventDetailScreen>
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.notifications_none_rounded),
+                    onPressed: () {
+                      CalendarService.addEventToCalendar(widget.event);
+                    },
+                    icon: const Icon(Icons.event_available_rounded),
                     label: Text(
                       'Remind Me',
                       style: GoogleFonts.outfit(

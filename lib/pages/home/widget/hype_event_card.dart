@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hype_grid/model/hype_event.dart';
 import 'package:hype_grid/pages/detail/event_detail_screen.dart';
+import 'package:hype_grid/pages/home/bloc/home_bloc.dart';
 import 'package:hype_grid/pages/home/widget/hype_badge.dart';
 import 'package:hype_grid/pages/home/widget/sport_tag.dart';
 import 'package:hype_grid/utils/app_colors.dart';
@@ -10,8 +12,14 @@ import 'package:intl/intl.dart';
 class HypeEventCard extends StatelessWidget {
   final HypeEvent event;
   final VoidCallback onTap;
+  final VoidCallback onCalendarAdd;
 
-  const HypeEventCard({super.key, required this.event, required this.onTap});
+  const HypeEventCard({
+    super.key,
+    required this.event,
+    required this.onTap,
+    required this.onCalendarAdd,
+  });
 
   bool get isHighHype => event.hypeScore >= 90;
 
@@ -46,10 +54,14 @@ class HypeEventCard extends StatelessWidget {
           // 2. Main Card Content
           GestureDetector(
             onTap: () {
+              final homeBloc = context.read<HomeBloc>();
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => EventDetailScreen(event: event),
+                  builder: (context) => BlocProvider.value(
+                    value: homeBloc,
+                    child: EventDetailScreen(event: event),
+                  ),
                 ),
               );
               onTap();
@@ -96,10 +108,7 @@ class HypeEventCard extends StatelessWidget {
                                         .toString()
                                         .toUpperCase(),
                                     style: GoogleFonts.inter(
-                                      color: isHighHype
-                                          ? AppColors.primary
-                                              .withValues(alpha: 0.8)
-                                          : AppColors.textSecondary,
+                                      color: AppColors.textSecondary,
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold,
                                       letterSpacing: 1,
@@ -173,25 +182,23 @@ class HypeEventCard extends StatelessWidget {
                             _buildInfoColumn(
                               label: 'WATCH ON',
                               value: event.broadcastChannel,
-                              valueColor: isHighHype
-                                  ? AppColors.primary
-                                  : AppColors.textPrimary,
+                              valueColor: AppColors.textPrimary,
                             ),
                           ],
                         ),
                       ),
 
-                      // Notify Button
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.notifications_none_rounded,
+                      // Add to Calendar Button
+                      IconButton(
+                        onPressed: onCalendarAdd,
+                        icon: const Icon(
+                          Icons.event_available_rounded,
                           color: AppColors.primary,
                           size: 20,
+                        ),
+                        style: IconButton.styleFrom(
+                          backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                          padding: const EdgeInsets.all(8),
                         ),
                       ),
                     ],

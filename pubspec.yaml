@@ -47,6 +47,8 @@ dependencies:
   screenshot: ^3.0.0
   firebase_core: ^4.5.0
   firebase_messaging: ^16.1.2
+  add_2_calendar: ^3.0.1
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
